@@ -20,7 +20,7 @@ export default function HomePage() {
             </div>
 
             {/* Frase de bienvenida */}
-            <div className="w-full bg-[#f7f3ee] py-6 px-4 text-center text-lg md:text-xl font-medium text-[#6b4f3b]">
+            <div className="text-center w-full bg-[#f7f3ee] py-6 px-4 text-xl md:text-4xl font-medium text-[#6b4f3b]">
                 Somos un espacio que busca crear una comunidad en familia, amigos, padres, madres e hijos.
             </div>
 
@@ -63,7 +63,6 @@ export default function HomePage() {
                     />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-bold mb-2 text-[#6b4f3b]">Somos</h2>
                     <p className="text-lg text-[#6b4f3b]">
                         Somos Claudia, Javier y Camila y nuestro propósito es ofrecer un espacio cálido y acogedor para que las personas puedan desarrollar sus habilidades y desafíos junto a nosotros.
                     </p>
@@ -72,7 +71,7 @@ export default function HomePage() {
 
             {/* Galería de videos */}
             <div className="w-full max-w-6xl py-12 px-4">
-                <h2 className="text-2xl font-bold mb-6 text-[#6b4f3b] text-center">Videos</h2>
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[1, 2, 3, 4].map(num => (
                         <video
