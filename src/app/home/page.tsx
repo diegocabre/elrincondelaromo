@@ -27,7 +27,7 @@ export default function HomePage() {
             {/* ¿Qué hacemos? y Video */}
             <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8 py-12 px-4 items-center">
                 <div>
-                    <h2 className="text-2xl font-bold mb-4 text-[#6b4f3b]">¿Qué hacemos en Rincón del Aromo?</h2>
+                    <h2 className="text-2xl font-bold mb-4 text-[#6b4f3b]">¿Qué hacemos en el Rincón del Aromo?</h2>
                     <ul className="space-y-3 text-lg">
                         <li>👦 After school y terapias infantiles</li>
                         <li>💼 Coworking y apoyo a emprendedores</li>
@@ -64,7 +64,7 @@ export default function HomePage() {
                 </div>
                 <div>
                     <p className="text-lg text-[#6b4f3b]">
-                        Somos Claudia, Javier y Camila y nuestro propósito es ofrecer un espacio cálido y acogedor para que las personas puedan desarrollar sus habilidades y desafíos junto a nosotros.
+                        Somos Claudia, Javier y Camila; nuestro propósito es ofrecer un espacio cálido y acogedor para que las personas puedan desarrollar sus habilidades y desafíos junto a nosotros.
                     </p>
                 </div>
             </div>
