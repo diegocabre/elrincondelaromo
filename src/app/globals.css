@@ -1,16 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@theme inline {
-  --font-great-vibes: var(--font-great-vibes);
-  --font-spectral: var(--font-spectral);
-}
-
 :root {
-  --bg-hero: url('/assets/img/fondo.png');
-  --logo: url('/assets/img/LOGO.png');
-  --chestnut: #90533B;
-  --harvest-gold: #DA983C;
+  --bg-hero: url("/assets/img/fondo.png");
+  --logo: url("/assets/img/LOGO.png");
+  --chestnut: #90533b;
+  --harvest-gold: #da983c;
   --dark-fern: #495235;
   --chestnut-foreground: #ffffff;
   --harvest-gold-foreground: #1a1a1a;
@@ -34,14 +29,6 @@
   }
 
   body {
-    font-family: var(--font-spectral); /* o --font-kristi */
-  }
-
-  .font-great-vibes {
-    font-family: var(--font-great-vibes);
-  }
-
-  .font-spectral {
-    font-family: var(--font-spectral);
+    font-family: var(--font-montserrat);
   }
 }

@@ -11,8 +11,8 @@ export const Logo = () => {
             className="relative w-24 sm:w-32 md:w-40 lg:w-48 h-10 sm:h-12 md:h-16 lg:h-20"
         >
             <Image
-                src="/assets/img/LOGOF.png"
-                alt="DS Soluciones Logo"
+                src="/assets/img/LOGOB.png"
+                alt="El Rincón del Aromo"
                 fill
                 className="object-contain"
                 priority

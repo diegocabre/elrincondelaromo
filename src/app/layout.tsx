@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
-import { Great_Vibes, Spectral } from "next/font/google";
+import { Montserrat } from "next/font/google";
 
 import "./globals.css";
 import { NavBar } from "@/components/nav/NavBar";
 import Footer from "@/components/footer/Footer";
-const geatVibes = Great_Vibes({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font--great-vibes",
-});
 
-const spectral = Spectral({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-spectral",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-montserrat",
 });
-
 
 export const metadata: Metadata = {
   title: "Rincon del Aromo",
@@ -28,9 +22,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
-        className={`${geatVibes.variable} ${spectral.variable} font-sans antialiased`}
+        className={`${montserrat.variable} font-montserrat antialiased`}
       >
         <NavBar />
         {children}

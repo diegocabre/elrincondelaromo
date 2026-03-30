@@ -1,111 +1,180 @@
-import React from 'react';
-import { FaInstagram, FaWhatsapp } from 'react-icons/fa';
-import Link from 'next/link';
+'use client';
 
-export default function Contacto() {
+import React from 'react';
+import { FaInstagram, FaWhatsapp, FaMapMarkerAlt, FaEnvelope, FaClock } from 'react-icons/fa';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
+};
+
+export default function ContactoPage() {
     return (
-        <main className="min-h-screen p-8 bg-[#f7f3ee]">
-            <h1 className="text-4xl font-bold mb-6 text-[#6b4f3b] text-center">Contacto</h1>
-            <div className="max-w-4xl mx-auto">
-                <div className="grid md:grid-cols-2 gap-8">
-                    <section className="mb-8 bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold mb-4 text-[#6b4f3b]">Información de Contacto</h2>
-                        <div className="space-y-4">
+        <main className="min-h-screen bg-[#FDFCF8] flex flex-col items-center pt-32 pb-24 px-6 md:px-12">
+            <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={staggerContainer}
+                className="w-full max-w-6xl flex flex-col gap-16"
+            >
+                <motion.div variants={fadeUp} className="text-center max-w-2xl mx-auto mb-8">
+                    <span className="text-[#8B5E3C] font-semibold tracking-widest uppercase text-sm mb-4 block">Hablemos</span>
+                    <h1 className="text-4xl md:text-6xl font-bold text-[#4A3B32] leading-tight mb-6">
+                        Contacto
+                    </h1>
+                    <p className="text-lg text-[#6B5A4E] font-light">
+                        Estamos aquí para responder tus consultas, sugerencias o simplemente para conversar sobre tu próxima visita al Rincón del Aromo.
+                    </p>
+                </motion.div>
+
+                <div className="grid lg:grid-cols-5 gap-12 lg:gap-8">
+                    
+                    {/* Tarjeta de Información */}
+                    <motion.div variants={fadeUp} className="lg:col-span-2 bg-[#FAEDDF] rounded-[2rem] p-10 flex flex-col gap-8 shadow-sm">
+                        <h2 className="text-2xl font-bold text-[#4A3B32] mb-2">Encuéntranos</h2>
+                        
+                        <div className="flex gap-4 items-start">
+                            <div className="text-[#8B5E3C] mt-1"><FaMapMarkerAlt size={20} /></div>
                             <div>
-                                <h3 className="font-semibold text-[#6b4f3b]">Dirección</h3>
-                                <p className="text-[#6b4f3b]">Isla Maulin 1871, Osorno, Región de Los Lagos</p>
+                                <h3 className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Dirección</h3>
+                                <p className="text-[#4A3B32] mt-1">Isla Maulin 1871, Osorno, <br/> Región de Los Lagos</p>
                             </div>
+                        </div>
+
+                        <div className="flex gap-4 items-start">
+                            <div className="text-[#8B5E3C] mt-1"><FaWhatsapp size={20} /></div>
                             <div>
-                                <h3 className="font-semibold text-[#6b4f3b]">Teléfono</h3>
+                                <h3 className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">WhatsApp</h3>
                                 <Link
                                     href="https://wa.me/56987222243"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-[#25D366] hover:text-[#128C7E] transition-colors flex items-center gap-2"
+                                    className="text-[#4A3B32] hover:text-[#8B5E3C] transition-colors mt-1 block font-medium"
                                 >
-                                    <FaWhatsapp className="text-xl" />
                                     +56 9 8722 2243
                                 </Link>
                             </div>
+                        </div>
+
+                        <div className="flex gap-4 items-start">
+                            <div className="text-[#8B5E3C] mt-1"><FaEnvelope size={20} /></div>
                             <div>
-                                <h3 className="font-semibold text-[#6b4f3b]">Email</h3>
+                                <h3 className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Email</h3>
                                 <Link
                                     href="mailto:contacto@rincondelaromo.com"
-                                    className="text-[#da983c] hover:text-[#c88a35] transition-colors"
+                                    className="text-[#4A3B32] hover:text-[#8B5E3C] transition-colors mt-1 block font-medium"
                                 >
                                     contacto@rincondelaromo.com
                                 </Link>
                             </div>
+                        </div>
+
+                        <div className="flex gap-4 items-start">
+                            <div className="text-[#8B5E3C] mt-1"><FaClock size={20} /></div>
                             <div>
-                                <h3 className="font-semibold text-[#6b4f3b]">Instagram</h3>
-                                <Link
-                                    href="https://www.instagram.com/rincondelaromo/"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[#E1306C] hover:text-[#C13584] transition-colors flex items-center gap-2"
-                                >
-                                    <FaInstagram className="text-xl" />
-                                    @rincondelaromo
-                                </Link>
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-[#6b4f3b]">Horarios</h3>
-                                <div className="space-y-2">
+                                <h3 className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Horarios</h3>
+                                <div className="mt-2 space-y-4">
                                     <div>
-                                        <p className="font-medium text-[#6b4f3b]">After School</p>
-                                        <p className="text-[#6b4f3b]">8:30 - 19:00</p>
-                                        <p className="text-[#da983c] font-medium">¡CUPOS LIMITADOS! 🌾</p>
+                                        <p className="font-semibold text-[#4A3B32]">After School</p>
+                                        <p className="text-[#6B5A4E] text-sm">8:30 - 19:00 <span className="text-[#D4A373] ml-2 font-medium">¡Cupos limitados!</span></p>
                                     </div>
                                     <div>
-                                        <p className="font-medium text-[#6b4f3b]">Cafetería y Cowork</p>
-                                        <p className="text-[#6b4f3b]">Lunes a Viernes: 08:00 - 20:30</p>
-                                        <p className="text-[#6b4f3b]">Sábados: 09:00 - 19:00</p>
+                                        <p className="font-semibold text-[#4A3B32]">Cafetería y Cowork</p>
+                                        <p className="text-[#6B5A4E] text-sm">Lun - Vie: 08:00 - 20:30</p>
+                                        <p className="text-[#6B5A4E] text-sm">Sábados: 09:00 - 19:00</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </section>
+                        
+                        {/* Redes Sociales */}
+                        <div className="mt-4 pt-6 border-t border-[#EACCA4]/50">
+                             <Link
+                                href="https://www.instagram.com/rincondelaromo/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-3 bg-white text-[#4A3B32] py-4 rounded-xl hover:bg-[#FDFCF8] hover:text-[#8B5E3C] transition-colors shadow-sm"
+                            >
+                                <FaInstagram className="text-2xl" />
+                                <span className="font-medium">Síguenos en Instagram</span>
+                            </Link>
+                        </div>
+                    </motion.div>
 
-                    <section className="mb-8 bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-2xl font-semibold mb-4 text-[#6b4f3b]">Envíanos un Mensaje</h2>
-                        <form className="space-y-4">
-                            <div>
-                                <label htmlFor="nombre" className="block mb-2 text-[#6b4f3b]">Nombre</label>
-                                <input
-                                    type="text"
-                                    id="nombre"
-                                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#da983c]"
-                                    placeholder="Tu nombre"
-                                />
+                    {/* Formulario de Contacto */}
+                    <motion.div variants={fadeUp} className="lg:col-span-3 bg-white rounded-[2rem] p-10 shadow-xl border border-[#EACCA4]/30">
+                        <h2 className="text-2xl font-bold text-[#4A3B32] mb-8">Envíanos un Mensaje</h2>
+                        <form className="space-y-6">
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="nombre" className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Nombre completo</label>
+                                    <input
+                                        type="text"
+                                        id="nombre"
+                                        className="w-full px-4 py-3 bg-[#FDFCF8] border border-[#EACCA4]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] transition-all"
+                                        placeholder="Ej. Camila Silva"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="email" className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        className="w-full px-4 py-3 bg-[#FDFCF8] border border-[#EACCA4]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] transition-all"
+                                        placeholder="tu@email.com"
+                                        required
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label htmlFor="email" className="block mb-2 text-[#6b4f3b]">Email</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#da983c]"
-                                    placeholder="tu@email.com"
-                                />
+                            
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="asunto" className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Asunto</label>
+                                <div className="relative">
+                                    <select
+                                        id="asunto"
+                                        className="w-full px-4 py-3 bg-[#FDFCF8] border border-[#EACCA4]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] transition-all appearance-none"
+                                        required
+                                    >
+                                        <option value="">Selecciona un motivo</option>
+                                        <option value="cowork">Reserva Cowork</option>
+                                        <option value="talleres">Información sobre Talleres</option>
+                                        <option value="bienestar">Clases de Bienestar</option>
+                                        <option value="otros">Otras consultas</option>
+                                    </select>
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#8B5E3C]">
+                                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label htmlFor="mensaje" className="block mb-2 text-[#6b4f3b]">Mensaje</label>
+
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="mensaje" className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Mensaje</label>
                                 <textarea
                                     id="mensaje"
-                                    className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#da983c]"
-                                    rows={4}
-                                    placeholder="Tu mensaje"
+                                    className="w-full px-4 py-3 bg-[#FDFCF8] border border-[#EACCA4]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] transition-all resize-y min-h-[150px]"
+                                    placeholder="¿En qué podemos ayudarte?"
+                                    required
                                 ></textarea>
                             </div>
+
                             <button
                                 type="submit"
-                                className="bg-[#da983c] text-white px-6 py-2 rounded hover:bg-[#c88a35] transition-colors w-full"
+                                className="w-full bg-[#8B5E3C] text-white mt-4 px-8 py-4 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-lg flex items-center justify-center"
                             >
                                 Enviar Mensaje
                             </button>
                         </form>
-                    </section>
+                    </motion.div>
                 </div>
-            </div>
+            </motion.div>
         </main>
     );
-} 
+}
