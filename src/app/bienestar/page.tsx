@@ -91,7 +91,7 @@ export default function BienestarPage() {
             setEmail('');
             setAvailableTimes([]);
 
-        } catch (error: any) {
+        } catch {
             setErrorMessage("Hubo un error al intentar reservar. Por favor revisa tu conexión o intenta de nuevo.");
         } finally {
             setLoading(false);

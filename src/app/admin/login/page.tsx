@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
             } else {
                 setError(data.message || 'Error de Autenticación');
             }
-        } catch (err) {
+        } catch {
             setError('Error conectando al servidor');
         } finally {
             setLoading(false);

@@ -51,7 +51,7 @@ export async function GET(request: Request) {
         const availableHours = baseHours.filter(hour => !occupiedTimes.has(hour));
 
         return NextResponse.json({ date: dateParam, available: availableHours });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
     }
 }

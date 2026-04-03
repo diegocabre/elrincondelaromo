@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 const secretKey = process.env.JWT_SECRET || 'fallback_secret_key_change_this_for_prod_123';
 const encodedKey = new TextEncoder().encode(secretKey);
 
-export async function encryptSession(payload: any) {
+export async function encryptSession(payload: Record<string, unknown>) {
     return new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
@@ -18,7 +18,7 @@ export async function verifySession(session: string | undefined = '') {
             algorithms: ['HS256'],
         });
         return payload;
-    } catch (error) {
+    } catch {
         return null; // Token no válido o expirado
     }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+// import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 // Configura las credenciales (Reemplazar con variables de entorno reales luego)
 // const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN! });
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         console.log("Mock MercadoPago Checkout for:", body.item.title);
         return NextResponse.json("https://sandbox.mercadopago.cl/checkout/v1/redirect?pref_id=mockup_123");
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "No se pudo crear la preferencia" }, { status: 500 });
     }
 }

@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,25 +16,40 @@ const staggerContainer = {
   visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
 };
 
+interface Taller {
+  id: string;
+  title: string;
+  price: number | string;
+  description: string;
+  category: string;
+  status: string;
+  image_url: string;
+  date_info: string;
+}
+
+interface WorkshopPhoto {
+  image_url: string;
+}
+
 export default function TalleresPage() {
-  const [talleresData, setTalleresData] = useState<any[]>([]);
+  const [talleresData, setTalleresData] = useState<Taller[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Estados Galería
   const [galleryModalId, setGalleryModalId] = useState<string | null>(null);
-  const [galleryPhotos, setGalleryPhotos] = useState<any[]>([]);
+  const [galleryPhotos, setGalleryPhotos] = useState<WorkshopPhoto[]>([]);
   const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
 
   useEffect(() => {
      const fetchTalleres = async () => {
-         const { data, error } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
-         if (data) setTalleresData(data);
+         const { data } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
+         if (data) setTalleresData(data as Taller[]);
          setLoading(false);
      };
      fetchTalleres();
   }, []);
 
-  const handleCheckout = async (taller: any) => {
+  const handleCheckout = async (taller: Taller) => {
     try {
         alert(`Redirigiendo a Mercado Pago para comprar: ${taller.title} por $${taller.price}... \n(Requiere credenciales)`);
     } catch (e) {
@@ -157,7 +173,7 @@ export default function TalleresPage() {
   );
 }
 
-function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado }: any) {
+function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado }: { taller: Taller, handleAction: () => void, actionText: string, isRealizado: boolean }) {
     return (
         <motion.div 
             variants={fadeUp} 

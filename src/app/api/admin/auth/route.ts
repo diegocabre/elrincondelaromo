@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         } else {
             return NextResponse.json({ success: false, message: 'Contraseña incorrecta' }, { status: 401 });
         }
-    } catch (e) {
+    } catch {
         return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
     }
 }

@@ -4,9 +4,24 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Calendar, Clock, X, Lock } from 'lucide-react';
 
+interface Booking {
+    id: string;
+    service: string;
+    date: string;
+    name: string;
+    email: string;
+}
+
+interface BlockedHour {
+    id: string;
+    start_time: string;
+    end_time: string;
+    reason: string;
+}
+
 export default function AdminAgendaPage() {
-    const [bookings, setBookings] = useState<any[]>([]);
-    const [blocks, setBlocks] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [blocks, setBlocks] = useState<BlockedHour[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [blockDate, setBlockDate] = useState('');

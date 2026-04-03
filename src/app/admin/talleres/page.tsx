@@ -1,11 +1,29 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Plus, Trash2, Edit3, Image as ImageIcon } from 'lucide-react';
 
+interface Taller {
+    id: string;
+    title: string;
+    category: string;
+    date_info: string;
+    price: number | string;
+    description: string;
+    image_url: string;
+    status: string;
+}
+
+interface Photo {
+    id: string;
+    image_url: string;
+    workshop_id: string;
+}
+
 export default function AdminTalleresPage() {
-    const [talleres, setTalleres] = useState<any[]>([]);
+    const [talleres, setTalleres] = useState<Taller[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -42,7 +60,7 @@ export default function AdminTalleresPage() {
         if (imageFile) {
             const fileExt = imageFile.name.split('.').pop();
             const fileName = `${Date.now()}.${fileExt}`;
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { error: uploadError } = await supabase.storage
                 .from('images')
                 .upload(`talleres/${fileName}`, imageFile);
                 
@@ -210,7 +228,7 @@ export default function AdminTalleresPage() {
 }
 
 // Componente Tarjeta Taller Administrador
-function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatus }: any) {
+function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatus }: { t: Taller, handleDelete: (id: string, title: string) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void }) {
     return (
         <div className="bg-white rounded-[2rem] shadow-sm border border-[#EACCA4]/30 flex flex-col items-start overflow-hidden hover:shadow-lg transition-all relative h-full">
             {/* Imagen Header */}
@@ -257,8 +275,8 @@ function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatu
 }
 
 // Gestor de Galería en Modal
-function GalleryManagerModal({ workshop, onClose }: any) {
-    const [photos, setPhotos] = useState<any[]>([]);
+function GalleryManagerModal({ workshop, onClose }: { workshop: Taller | undefined, onClose: () => void }) {
+    const [photos, setPhotos] = useState<Photo[]>([]);
     const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
@@ -271,6 +289,7 @@ function GalleryManagerModal({ workshop, onClose }: any) {
     }, [workshop]);
 
     const handleUploadBundle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!workshop) return;
         const files = e.target.files;
         if (!files || files.length === 0) return;
         
@@ -316,7 +335,7 @@ function GalleryManagerModal({ workshop, onClose }: any) {
 
                 <div className="p-8 border-b border-[#EACCA4]/30 sticky top-0 bg-[#FDFCF8] z-0">
                     <h2 className="text-2xl font-bold text-[#4A3B32]">Galería Pública de Taller</h2>
-                    <p className="text-[#6B5A4E]">Sube múltiples fotos para mostrar lo increíble que fue "{workshop.title}". Estas fotos las verán tus clientes al dar clic en Ver Galería.</p>
+                    <p className="text-[#6B5A4E]">Sube múltiples fotos para mostrar lo increíble que fue &quot;{workshop.title}&quot;. Estas fotos las verán tus clientes al dar clic en Ver Galería.</p>
                 </div>
 
                 <div className="p-8 flex-1 flex flex-col gap-8">
@@ -359,7 +378,7 @@ function GalleryManagerModal({ workshop, onClose }: any) {
 }
 
 // Icono simple "X" auxiliar integrado
-function X(props: any) {
+function X(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
   );
