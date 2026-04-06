@@ -33,6 +33,7 @@ export default function AdminAgendaPage() {
     const [openDate, setOpenDate] = useState('');
     const [openTime, setOpenTime] = useState('');
     const [openTherapyId, setOpenTherapyId] = useState('');
+    const [openQuantity, setOpenQuantity] = useState(1);
 
     const [therapyTitle, setTherapyTitle] = useState('');
     const [therapyDesc, setTherapyDesc] = useState('');
@@ -69,13 +70,17 @@ export default function AdminAgendaPage() {
         const d = new Date(year, month - 1, day, hour, minute);
         const dateIso = d.toISOString();
         
-        const { error } = await supabase.from('available_hours').insert([
-            { start_time: dateIso, therapy_id: openTherapyId }
-        ]);
+        const rowsToInsert = Array.from({ length: openQuantity }).map(() => ({
+            start_time: dateIso,
+            therapy_id: openTherapyId
+        }));
+
+        const { error } = await supabase.from('available_hours').insert(rowsToInsert);
 
         if (!error) {
             setOpenDate('');
             setOpenTime('');
+            setOpenQuantity(1);
             fetchData();
         } else {
             alert('Error al habilitar hora: ' + error.message);
@@ -186,8 +191,12 @@ export default function AdminAgendaPage() {
                             <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Hora</label>
                             <input type="time" required value={openTime} onChange={(e)=>setOpenTime(e.target.value)} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
                         </div>
+                        <div className="flex flex-col gap-2 w-24">
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase" title="¿Cuántas personas pueden reservar esta hora?">Cupos</label>
+                            <input type="number" min="1" required value={openQuantity} onChange={(e)=>setOpenQuantity(Number(e.target.value))} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] text-center" title="Capacidad de personas"/>
+                        </div>
                         <button type="submit" className="bg-[#2E7D32] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#1B5E20] transition-colors shadow-md h-[48px]">
-                            Abrir Cupo
+                            Abrir
                         </button>
                     </form>
                 </div>
@@ -203,13 +212,26 @@ export default function AdminAgendaPage() {
                         <p className="text-sm text-[#6B5A4E]">No hay cupos abiertos actualmente.</p>
                     ) : (
                         <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-2">
-                            {availableSlots.map(b => (
-                                <div key={b.id} className="flex items-center justify-between p-4 rounded-xl bg-[#E8F5E9] border border-[#C8E6C9]">
+                            {Object.values(availableSlots.reduce((acc, b) => {
+                                const key = `${b.start_time}_${b.therapy_id}`;
+                                if (!acc[key]) acc[key] = { ...b, count: 0, ids: [] };
+                                acc[key].count += 1;
+                                acc[key].ids.push(b.id);
+                                return acc;
+                            }, {} as any)).map((group: any) => (
+                                <div key={group.ids[0]} className="flex items-center justify-between p-4 rounded-xl bg-[#E8F5E9] border border-[#C8E6C9]">
                                     <div>
-                                        <p className="font-bold text-[#2E7D32] text-sm">{formatDateTime(b.start_time)}</p>
-                                        <p className="text-xs text-[#2E7D32] mt-1 opacity-80">{b.therapy_id ? therapies.find(t => t.id === b.therapy_id)?.title : 'Cupo Global'}</p>
+                                        <p className="font-bold text-[#2E7D32] text-sm">{formatDateTime(group.start_time)}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <p className="text-xs text-[#2E7D32] opacity-80">{group.therapy_id ? therapies.find(t => t.id === group.therapy_id)?.title : 'Cupo Global'}</p>
+                                            {group.count > 0 && <span className="text-[10px] bg-[#C8E6C9] text-[#1B5E20] px-2 py-0.5 rounded-full font-bold">{group.count} cupos vivos</span>}
+                                        </div>
                                     </div>
-                                    <button onClick={() => handleDeleteHour(b.id)} className="p-2 text-[#C62828] hover:bg-[#FFCDD2] rounded-lg transition-colors border border-transparent hover:border-[#FFCDD2]" title="Cerrar cupo">
+                                    <button onClick={async () => {
+                                        if (!confirm(`¿Deseas eliminar y CERRAR AL PÚBLICO absolutamente todos los cupos (${group.count}) de este horario?`)) return;
+                                        const { error } = await supabase.from('available_hours').delete().in('id', group.ids);
+                                        if (!error) fetchData();
+                                    }} className="p-2 text-[#C62828] hover:bg-[#FFCDD2] rounded-lg transition-colors border border-transparent hover:border-[#FFCDD2]" title="Cerrar cupo">
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>
