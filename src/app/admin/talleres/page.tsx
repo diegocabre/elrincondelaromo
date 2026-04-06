@@ -244,7 +244,7 @@ function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatu
             )}
 
             <div className="p-6 flex flex-col items-start gap-4 w-full h-full">
-                <span className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full flex gap-2 ${t.status === 'realizado' ? 'bg-[#EEEEEE] text-[#6B5A4E]' : 'bg-[#E8D1B5]/30 text-[#8B5E3C]'}`}>
+                <span className={`inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full gap-2 ${t.status === 'realizado' ? 'bg-[#EEEEEE] text-[#6B5A4E]' : 'bg-[#E8D1B5]/30 text-[#8B5E3C]'}`}>
                     {t.status === 'realizado' ? 'Realizado' : t.category}
                     {t.status === 'lleno' && <span className="bg-red-100 text-red-700 px-2 rounded-full border border-red-200">LLENO</span>}
                 </span>

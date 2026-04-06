@@ -161,7 +161,7 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isL
 
             {/* Contenido sobre Imagen */}
             <div className="relative z-20 p-8 flex flex-col h-full justify-end text-white">
-                <span className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full mb-4 self-start shadow-md backdrop-blur-md flex gap-2 ${isRealizado ? 'bg-white/20 text-white' : 'bg-[#EACCA4] text-[#2c231d]'}`}>
+                <span className={`inline-flex px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full mb-4 self-start shadow-md backdrop-blur-md gap-2 ${isRealizado ? 'bg-white/20 text-white' : 'bg-[#EACCA4] text-[#2c231d]'}`}>
                     <span>{isRealizado ? 'Realizado' : taller.category}</span>
                     {isLleno && <span className="bg-red-600 text-white px-2 rounded-full">AGOTADO</span>}
                 </span>
