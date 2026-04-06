@@ -253,12 +253,7 @@ export default function HomePage() {
             className="flex items-center justify-center relative"
           >
             <div className="w-full max-w-sm aspect-[4/5] relative rounded-t-full overflow-hidden shadow-2xl ring-8 ring-white">
-              <Image
-                src="/assets/img/ventanal.png"
-                alt="Logo aromos"
-                fill
-                className="object-cover bg-white p-12"
-              />
+              <Image src="/assets/img/ventanal.png" alt="Logo aromos" fill />
             </div>
           </motion.div>
         </div>
