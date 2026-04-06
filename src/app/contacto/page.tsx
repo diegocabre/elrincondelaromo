@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FaInstagram, FaWhatsapp, FaMapMarkerAlt, FaEnvelope, FaClock } from 'react-icons/fa';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { submitContactAction } from '@/actions/contact';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -16,6 +17,26 @@ const staggerContainer = {
 };
 
 export default function ContactoPage() {
+    const [loading, setLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const handleSubmit = async (formData: FormData) => {
+        setLoading(true);
+        setSuccessMessage('');
+        setErrorMessage('');
+        
+        const res = await submitContactAction(formData);
+        
+        if (res.success && res.message) {
+            setSuccessMessage(res.message);
+            document.querySelector("form")?.reset();
+        } else {
+            setErrorMessage(res.error || 'Error al enviar.');
+        }
+        setLoading(false);
+    };
+
     return (
         <main className="min-h-screen bg-[#FDFCF8] flex flex-col items-center pt-32 pb-24 px-6 md:px-12">
             <motion.div 
@@ -111,13 +132,26 @@ export default function ContactoPage() {
                     {/* Formulario de Contacto */}
                     <motion.div variants={fadeUp} className="lg:col-span-3 bg-white rounded-[2rem] p-10 shadow-xl border border-[#EACCA4]/30">
                         <h2 className="text-2xl font-bold text-[#4A3B32] mb-8">Envíanos un Mensaje</h2>
-                        <form className="space-y-6">
+                        
+                        {successMessage && (
+                            <div className="mb-6 p-4 bg-[#E8F5E9] border border-[#A5D6A7] text-[#2E7D32] rounded-xl text-sm font-medium">
+                                {successMessage}
+                            </div>
+                        )}
+                        {errorMessage && (
+                            <div className="mb-6 p-4 bg-[#FFEBEE] border border-[#FFCDD2] text-[#C62828] rounded-xl text-sm font-medium">
+                                {errorMessage}
+                            </div>
+                        )}
+
+                        <form action={handleSubmit} className="space-y-6">
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="flex flex-col gap-2">
                                     <label htmlFor="nombre" className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Nombre completo</label>
                                     <input
                                         type="text"
                                         id="nombre"
+                                        name="nombre"
                                         className="w-full px-4 py-3 bg-[#FDFCF8] border border-[#EACCA4]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] transition-all"
                                         placeholder="Ej. Camila Silva"
                                         required
@@ -128,6 +162,7 @@ export default function ContactoPage() {
                                     <input
                                         type="email"
                                         id="email"
+                                        name="email"
                                         className="w-full px-4 py-3 bg-[#FDFCF8] border border-[#EACCA4]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] transition-all"
                                         placeholder="tu@email.com"
                                         required
@@ -140,6 +175,7 @@ export default function ContactoPage() {
                                 <div className="relative">
                                     <select
                                         id="asunto"
+                                        name="asunto"
                                         className="w-full px-4 py-3 bg-[#FDFCF8] border border-[#EACCA4]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] transition-all appearance-none"
                                         required
                                     >
@@ -159,6 +195,7 @@ export default function ContactoPage() {
                                 <label htmlFor="mensaje" className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Mensaje</label>
                                 <textarea
                                     id="mensaje"
+                                    name="mensaje"
                                     className="w-full px-4 py-3 bg-[#FDFCF8] border border-[#EACCA4]/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] transition-all resize-y min-h-[150px]"
                                     placeholder="¿En qué podemos ayudarte?"
                                     required
@@ -167,9 +204,10 @@ export default function ContactoPage() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-[#8B5E3C] text-white mt-4 px-8 py-4 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-lg flex items-center justify-center"
+                                disabled={loading}
+                                className="w-full bg-[#8B5E3C] text-white mt-4 px-8 py-4 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-lg flex items-center justify-center disabled:opacity-50"
                             >
-                                Enviar Mensaje
+                                {loading ? "Enviando..." : "Enviar Mensaje"}
                             </button>
                         </form>
                     </motion.div>

@@ -10,47 +10,43 @@ export async function GET(request: Request) {
     }
 
     try {
-        // Horario base de atención (9 AM a 18 PM)
-        const baseHours = [
-            '09:00', '10:00', '11:00', '12:00', '13:00', 
-            '14:00', '15:00', '16:00', '17:00'
-        ];
-
         // Fechas limite para ese dia (YYYY-MM-DD)
         const startOfDay = `${dateParam}T00:00:00.000Z`;
         const endOfDay = `${dateParam}T23:59:59.999Z`;
 
-        // Traer reservas de ese día
+        // 1. Traer horas HABILITADAS (Whitelist)
+        const { data: availableArray } = await supabase
+            .from('available_hours')
+            .select('start_time')
+            .gte('start_time', startOfDay)
+            .lte('start_time', endOfDay);
+
+        const enabledTimes = new Set<string>();
+        availableArray?.forEach(a => {
+             // Formateo seguro para extraer HH:MM
+             const timeStr = new Date(a.start_time).toISOString().substring(11, 16);
+             enabledTimes.add(timeStr);
+        });
+
+        // 2. Traer reservas existentes de ese día
         const { data: bookingsArray } = await supabase
             .from('bookings')
             .select('date')
             .gte('date', startOfDay)
             .lte('date', endOfDay);
 
-        // Traer bloqueos
-        const { data: blocksArray } = await supabase
-            .from('blocked_hours')
-            .select('start_time, end_time')
-            .gte('start_time', startOfDay)
-            .lte('start_time', endOfDay);
-
-        // Convertir reservas y bloqueos a formatos HH:MM
         const occupiedTimes = new Set<string>();
-
         bookingsArray?.forEach(b => {
              const timeStr = new Date(b.date).toISOString().substring(11, 16);
              occupiedTimes.add(timeStr);
         });
 
-        blocksArray?.forEach(b => {
-             const timeStr = new Date(b.start_time).toISOString().substring(11, 16);
-             occupiedTimes.add(timeStr);
-        });
+        // 3. Cruzar: Habilitadas Menos Ocupadas
+        const finalAvailableHours = Array.from(enabledTimes)
+             .filter(hour => !occupiedTimes.has(hour))
+             .sort(); // ordenadas de menor a mayor
 
-        // Filtrar horas disponibles
-        const availableHours = baseHours.filter(hour => !occupiedTimes.has(hour));
-
-        return NextResponse.json({ date: dateParam, available: availableHours });
+        return NextResponse.json({ date: dateParam, available: finalAvailableHours });
     } catch {
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
     }
