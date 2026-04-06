@@ -24,18 +24,26 @@ interface GlobalSlot {
 
 export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
     const [slots, setSlots] = useState<GlobalSlot[]>([]);
-    const [loadingTimes, setLoadingTimes] = useState(true);
+    const [loadingTimes, setLoadingTimes] = useState(false);
 
     const [selectedSlot, setSelectedSlot] = useState<GlobalSlot | null>(null);
+    const [selectedTherapyTitle, setSelectedTherapyTitle] = useState('');
 
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
+        const therapyId = therapies.find(t => t.title === selectedTherapyTitle)?.id;
+        if (!therapyId) {
+            setSlots([]);
+            return;
+        }
+
         const fetchTimes = async () => {
+            setLoadingTimes(true);
             try {
-                const res = await fetch(`/api/availability`);
+                const res = await fetch(`/api/availability?therapy_id=${therapyId}`);
                 const data = await res.json();
                 if (data.slots) {
                     setSlots(data.slots);
@@ -48,7 +56,7 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
         };
 
         fetchTimes();
-    }, []);
+    }, [selectedTherapyTitle, therapies]);
 
     // Agrupar los cupos por fecha local
     const groupedSlots = slots.reduce((acc, slot) => {
@@ -86,9 +94,12 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
             setSelectedSlot(null);
             document.querySelector("form")?.reset();
             // Refetch para que se marque como Lleno
-            const res = await fetch(`/api/availability`);
-            const data = await res.json();
-            if (data.slots) setSlots(data.slots);
+            const therapyId = therapies.find(t => t.title === selectedTherapyTitle)?.id;
+            if (therapyId) {
+                const res = await fetch(`/api/availability?therapy_id=${therapyId}`);
+                const data = await res.json();
+                if (data.slots) setSlots(data.slots);
+            }
         } else {
             setErrorMessage(result.error || 'Fallo desconocido.');
         }
@@ -145,7 +156,11 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                     <select 
                         name="selectedService"
                         required
-                        defaultValue=""
+                        value={selectedTherapyTitle}
+                        onChange={(e) => {
+                            setSelectedTherapyTitle(e.target.value);
+                            setSelectedSlot(null);
+                        }}
                         className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"
                     >
                         <option value="" disabled>Selecciona una opción</option>
@@ -159,6 +174,10 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                     <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Cupos Abiertos</label>
                     {loadingTimes ? (
                         <p className="text-[#6B5A4E] text-sm animate-pulse py-4">Buscando disponibilidades...</p>
+                    ) : !selectedTherapyTitle ? (
+                        <div className="p-4 bg-[#FAEDDF]/50 border border-[#EACCA4]/50 rounded-xl text-[#6B5A4E] text-sm mt-1">
+                            Por favor, selecciona un servicio primero para ver sus horarios disponibles.
+                        </div>
                     ) : Object.keys(groupedSlots).length === 0 ? (
                         <div className="p-4 bg-[#FFEBEE] border border-[#FFCDD2] rounded-xl text-[#C62828] text-sm mt-1">
                             Aún no han habilitado cupos. Vuelve pronto o consúltanos.

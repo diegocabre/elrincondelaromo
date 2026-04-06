@@ -15,6 +15,7 @@ interface Booking {
 interface AvailableHour {
     id: string;
     start_time: string;
+    therapy_id?: string;
 }
 
 interface Therapy {
@@ -31,6 +32,7 @@ export default function AdminAgendaPage() {
 
     const [openDate, setOpenDate] = useState('');
     const [openTime, setOpenTime] = useState('');
+    const [openTherapyId, setOpenTherapyId] = useState('');
 
     const [therapyTitle, setTherapyTitle] = useState('');
     const [therapyDesc, setTherapyDesc] = useState('');
@@ -58,10 +60,14 @@ export default function AdminAgendaPage() {
 
     const handleOpenHour = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!openTherapyId) {
+            alert('Debes seleccionar una terapia a la cual asociar el horario.');
+            return;
+        }
         const dateIso = `${openDate}T${openTime}:00`;
         
         const { error } = await supabase.from('available_hours').insert([
-            { start_time: dateIso }
+            { start_time: dateIso, therapy_id: openTherapyId }
         ]);
 
         if (!error) {
@@ -163,11 +169,18 @@ export default function AdminAgendaPage() {
                     
                     <form onSubmit={handleOpenHour} className="flex flex-col md:flex-row gap-4 items-end">
                         <div className="flex flex-col gap-2 flex-1">
-                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Fecha a habilitar</label>
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Terapia</label>
+                            <select required value={openTherapyId} onChange={(e)=>setOpenTherapyId(e.target.value)} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]">
+                                <option value="" disabled>Selecciona Terapia</option>
+                                {therapies.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+                            </select>
+                        </div>
+                        <div className="flex flex-col gap-2 flex-1">
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Fecha</label>
                             <input type="date" required value={openDate} onChange={(e)=>setOpenDate(e.target.value)} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
                         </div>
                         <div className="flex flex-col gap-2 flex-1">
-                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Hora de inicio</label>
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Hora</label>
                             <input type="time" required value={openTime} onChange={(e)=>setOpenTime(e.target.value)} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
                         </div>
                         <button type="submit" className="bg-[#2E7D32] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#1B5E20] transition-colors shadow-md h-[48px]">
@@ -191,7 +204,7 @@ export default function AdminAgendaPage() {
                                 <div key={b.id} className="flex items-center justify-between p-4 rounded-xl bg-[#E8F5E9] border border-[#C8E6C9]">
                                     <div>
                                         <p className="font-bold text-[#2E7D32] text-sm">{formatDateTime(b.start_time)}</p>
-                                        <p className="text-xs text-[#2E7D32] mt-1 opacity-80">Cupo listo para reservas</p>
+                                        <p className="text-xs text-[#2E7D32] mt-1 opacity-80">{b.therapy_id ? therapies.find(t => t.id === b.therapy_id)?.title : 'Cupo Global'}</p>
                                     </div>
                                     <button onClick={() => handleDeleteHour(b.id)} className="p-2 text-[#C62828] hover:bg-[#FFCDD2] rounded-lg transition-colors border border-transparent hover:border-[#FFCDD2]" title="Cerrar cupo">
                                         <X className="w-5 h-5" />

@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function GET() {
-    // Al ser un llamado global sin parámetros, quitamos la dependencia a un día
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const therapyId = searchParams.get('therapy_id');
+
         const nowIso = new Date().toISOString();
 
         // 1. Traer todas las horas HABILITADAS futuras
-        const { data: availableArray } = await supabase
+        let query = supabase
             .from('available_hours')
             .select('id, start_time')
             .gte('start_time', nowIso)
             .order('start_time', { ascending: true });
+
+        if (therapyId) {
+            query = query.eq('therapy_id', therapyId);
+        }
+
+        const { data: availableArray } = await query;
 
         // 2. Traer reservas futuras
         const { data: bookingsArray } = await supabase
