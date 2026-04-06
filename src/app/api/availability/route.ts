@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         });
 
         // Crear array final de horas únicas
-        const allSlots: any[] = [];
+        const allSlots: { id: string; isoDate: string; isFull: boolean }[] = [];
         capacityMap.forEach((capacity, key) => {
              const [timeNum, tId] = key.split('_');
              

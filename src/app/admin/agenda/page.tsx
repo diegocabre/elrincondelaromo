@@ -87,12 +87,6 @@ export default function AdminAgendaPage() {
         }
     };
 
-    const handleDeleteHour = async (id: string) => {
-        if (!confirm('¿Deseas eliminar esta hora y cerrarla al público?')) return;
-        const { error } = await supabase.from('available_hours').delete().eq('id', id);
-        if (!error) fetchData();
-    };
-
     const handleAddTherapy = async (e: React.FormEvent) => {
         e.preventDefault();
         const { error } = await supabase.from('therapies').insert([
@@ -218,7 +212,7 @@ export default function AdminAgendaPage() {
                                 acc[key].count += 1;
                                 acc[key].ids.push(b.id);
                                 return acc;
-                            }, {} as any)).map((group: any) => (
+                            }, {} as Record<string, { start_time: string, therapy_id?: string, count: number, ids: string[] }>)).map((group) => (
                                 <div key={group.ids[0]} className="flex items-center justify-between p-4 rounded-xl bg-[#E8F5E9] border border-[#C8E6C9]">
                                     <div>
                                         <p className="font-bold text-[#2E7D32] text-sm">{formatDateTime(group.start_time)}</p>
