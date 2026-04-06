@@ -1,137 +1,88 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
+import { CheckCircle2, PlayCircle } from "lucide-react";
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-    },
-  },
-};
-
-const fadeInUp = {
+const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.2 } },
+};
+
 export default function HomeServices() {
   return (
-      <section className="w-full py-24 px-6 md:px-12 max-w-7xl">
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerContainer}
-          className="text-center mb-16"
-        >
-          <motion.h2
-            variants={fadeInUp}
-            className="text-3xl md:text-4xl font-bold text-[#4A3B32] mb-4"
-          >
-            Nuestros Espacios
-          </motion.h2>
-          <motion.div
-            variants={fadeInUp}
-            className="w-24 h-1 bg-[#D4A373] mx-auto rounded-full"
-          />
+    <section className="w-full py-24 px-6 md:px-12 max-w-7xl mx-auto">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-50px" }}
+        className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center"
+      >
+        {/* Left Column - Texto y Viñetas */}
+        <motion.div variants={fadeUp} className="flex flex-col">
+          <span className="text-[#8B5E3C] font-semibold tracking-[0.2em] uppercase text-sm mb-4">
+            Nuestro Enfoque
+          </span>
+          <h2 className="text-3xl md:text-5xl font-bold text-[#4A3B32] mb-6 leading-tight">
+            ¿Qué hacemos en <br /> Rincón del Aromo?
+          </h2>
+          <div className="w-16 h-1 bg-[#D4A373] mb-8 rounded-full" />
+
+          <p className="text-lg text-[#6B5A4E] font-medium mb-6">
+            En Rincón del Aromo promovemos el bienestar familiar con espacios
+            para todos:
+          </p>
+
+          <ul className="space-y-4">
+            {[
+              "Terapias",
+              "Coworking y apoyo a emprendedores",
+              "Talleres para adultos y niños",
+              "Un rincón acogedor para disfrutar en familia.",
+            ].map((item, idx) => (
+              <motion.li
+                key={idx}
+                variants={fadeUp}
+                className="flex items-start gap-3"
+              >
+                <div className="mt-1 bg-[#FAEDDF] text-[#8B5E3C] rounded-full p-1">
+                  <CheckCircle2 size={18} strokeWidth={2.5} />
+                </div>
+                <span className="text-lg text-[#4A3B32] font-medium leading-relaxed">
+                  {item}
+                </span>
+              </motion.li>
+            ))}
+          </ul>
         </motion.div>
 
+        {/* Right Column - Video Placeholder */}
         <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          variants={fadeUp}
+          className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-[#E8D1B5]/30 group cursor-pointer bg-black flex items-center justify-center"
         >
-          {/* Card 1 */}
-          <motion.div variants={fadeInUp} className="group cursor-pointer">
-            <Link href="/cafeteria-cowork">
-              <div className="relative h-96 rounded-2xl overflow-hidden shadow-md">
-                <Image
-                  src="/assets/img/home/cafeteria.jpeg"
-                  alt="Cafetería"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <h3 className="text-2xl font-bold mb-2">Cafetería</h3>
-                  <p className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 text-sm">
-                    Café de especialidad en un ambiente relajado.
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
+          {/* Temporary Video Placeholder */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#4A3B32] to-[#2A221C] opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
 
-          {/* Card 2 */}
-          <motion.div variants={fadeInUp} className="group cursor-pointer">
-            <Link href="/cafeteria-cowork">
-              <div className="relative h-96 rounded-2xl overflow-hidden shadow-md">
-                <Image
-                  src="/assets/img/home/trabajo.jpeg"
-                  alt="Coworking"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <h3 className="text-2xl font-bold mb-2">Coworking</h3>
-                  <p className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 text-sm">
-                    Inspírate y trabaja con comodidad.
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
-
-          {/* Card 3 */}
-          <motion.div variants={fadeInUp} className="group cursor-pointer">
-            <Link href="/talleres">
-              <div className="relative h-96 rounded-2xl overflow-hidden shadow-md">
-                <Image
-                  src="/assets/img/tallerTarotandWine.jpeg"
-                  alt="Talleres"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <h3 className="text-2xl font-bold mb-2">Talleres</h3>
-                  <p className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 text-sm">
-                    Aprende, crea y conecta en comunidad.
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
-
-          {/* Card 4 - BUG FIX DEL LINK DE TERAPIA A BIENESTAR */}
-          <motion.div variants={fadeInUp} className="group cursor-pointer">
-            <Link href="/bienestar">
-              <div className="relative h-96 rounded-2xl overflow-hidden shadow-md">
-                <Image
-                  src="/assets/img/home/espacios.jpeg"
-                  alt="Bienestar"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <h3 className="text-2xl font-bold mb-2">Bienestar</h3>
-                  <p className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 text-sm">
-                    Clases y terapias para cuerpo y mente.
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
+          <div className="relative z-10 flex flex-col items-center">
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 text-white/90 shadow-xl mb-4"
+            >
+              <PlayCircle size={48} strokeWidth={1.5} className="ml-2" />
+            </motion.div>
+            <span className="text-white/80 text-sm font-medium tracking-wide uppercase">
+              Ver Video
+            </span>
+          </div>
         </motion.div>
-      </section>
+      </motion.div>
+    </section>
   );
 }

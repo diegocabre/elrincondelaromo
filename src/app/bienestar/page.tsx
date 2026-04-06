@@ -19,7 +19,7 @@ export default async function BienestarPage() {
                 </div>
                 
                 {/* Booking Form Section - Interactive Form */}
-                <div className="w-full lg:w-1/2 flex items-start justify-center">
+                <div className="w-full lg:w-1/2 flex items-start justify-center lg:sticky lg:top-32 h-fit">
                     <BookingForm therapies={therapies} />
                 </div>
 

@@ -27,7 +27,7 @@ export const NavBar = () => {
 
     const menuItems = [
         { href: '/home', label: 'Inicio' },
-        { href: '/about', label: 'Nosotros' },
+        { href: '/about', label: 'Somos' },
         { href: '/cafeteria-cowork', label: 'Cafetería | Cowork' },
         { href: '/talleres', label: 'Talleres' },
         { href: '/bienestar', label: 'Bienestar' },

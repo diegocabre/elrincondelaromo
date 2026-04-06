@@ -103,10 +103,6 @@ export default function ContactoPage() {
                                 <h3 className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Horarios</h3>
                                 <div className="mt-2 space-y-4">
                                     <div>
-                                        <p className="font-semibold text-[#4A3B32]">After School</p>
-                                        <p className="text-[#6B5A4E] text-sm">8:30 - 19:00 <span className="text-[#D4A373] ml-2 font-medium">¡Cupos limitados!</span></p>
-                                    </div>
-                                    <div>
                                         <p className="font-semibold text-[#4A3B32]">Cafetería y Cowork</p>
                                         <p className="text-[#6B5A4E] text-sm">Lun - Vie: 08:00 - 20:30</p>
                                         <p className="text-[#6B5A4E] text-sm">Sábados: 09:00 - 19:00</p>
