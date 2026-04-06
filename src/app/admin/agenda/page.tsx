@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Calendar, CheckCircle, X, PlusCircle, LayoutList } from 'lucide-react';
+import { Calendar, CheckCircle, X, PlusCircle, LayoutList, Zap } from 'lucide-react';
 
 interface Booking {
     id: string;
@@ -37,6 +37,113 @@ export default function AdminAgendaPage() {
 
     const [therapyTitle, setTherapyTitle] = useState('');
     const [therapyDesc, setTherapyDesc] = useState('');
+
+    const [genMonth, setGenMonth] = useState('');
+    const [genCapacity, setGenCapacity] = useState(10);
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const handleGenerateMonth = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!genMonth) return;
+        if (!confirm(`¿Estás seguro de inyectar automáticamente todo el mes de ${genMonth} con ${genCapacity} cupos por bloque fijo? Asegúrate de haber agregado primero terapias que contengan las palabras clave: 'Yoga', 'Pilates', 'Inglés', 'Zumba'.`)) return;
+
+        setIsGenerating(true);
+        const [yearStr, monthStr] = genMonth.split('-');
+        const year = parseInt(yearStr);
+        const month = parseInt(monthStr) - 1;
+
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        const template = {
+            1: [ // Lunes
+              { kw: 'yoga', time: '08:10' },
+              { kw: 'pilates', time: '11:15' },
+              { kw: 'yoga', time: '19:00' }
+            ],
+            2: [ // Martes
+              { kw: 'yoga', time: '09:00' },
+              { kw: 'ingl', time: '15:00' },
+              { kw: 'ingl', time: '16:00' },
+              { kw: 'ingl', time: '17:00' },
+              { kw: 'pilates', time: '18:15' }
+            ],
+            3: [ // Miércoles
+              { kw: 'yoga', time: '08:10' },
+              { kw: 'yoga', time: '19:00' }
+            ],
+            4: [ // Jueves
+              { kw: 'ingl', time: '15:00' },
+              { kw: 'ingl', time: '16:00' },
+              { kw: 'ingl', time: '17:00' },
+              { kw: 'pilates', time: '18:15' },
+              { kw: 'yoga', time: '19:30' }
+            ],
+            5: [ // Viernes
+              { kw: 'pilates', time: '11:15' }
+            ],
+            6: [ // Sábado
+              { kw: 'zumba', time: '10:00' }
+            ]
+        };
+
+        const rowsToInsert = [];
+
+        const findTherapyId = (keyword: string) => {
+             // normalize string to remove accents
+             const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+             const cleanKw = normalize(keyword);
+             const found = therapies.find(t => normalize(t.title).includes(cleanKw));
+             return found ? found.id : null;
+        };
+
+        for (let day = 1; day <= daysInMonth; day++) {
+             const d = new Date(year, month, day);
+             const dayOfWeek = d.getDay(); 
+
+             const dailyClasses = template[dayOfWeek as keyof typeof template];
+             if (dailyClasses) {
+                 for (const c of dailyClasses) {
+                     const tId = findTherapyId(c.kw);
+                     if (tId) {
+                         const [hh, mm] = c.time.split(':').map(Number);
+                         const classDate = new Date(year, month, day, hh, mm);
+                         const isoDate = classDate.toISOString();
+
+                         for (let q = 0; q < genCapacity; q++) {
+                             rowsToInsert.push({ start_time: isoDate, therapy_id: tId });
+                         }
+                     }
+                 }
+             }
+        }
+
+        if (rowsToInsert.length === 0) {
+            alert('No se generó nada. Asegúrate de tener Terapias creadas que en su título digan "Yoga", "Pilates", "Inglés" o "Zumba".');
+            setIsGenerating(false);
+            return;
+        }
+
+        let hasError = false;
+        let errorMessage = '';
+        for (let i = 0; i < rowsToInsert.length; i += 100) {
+            const batch = rowsToInsert.slice(i, i + 100);
+            const { error } = await supabase.from('available_hours').insert(batch);
+            if (error) {
+                hasError = true;
+                errorMessage = error.message;
+                break;
+            }
+        }
+
+        if (!hasError) {
+            alert(`¡Éxito! Se inyectaron ${rowsToInsert.length} bloques/cupos para ${genMonth}. Actualizando vista...`);
+            setGenMonth('');
+            fetchData();
+        } else {
+            alert('Hubo un error al guardar algunos cupos: ' + errorMessage);
+        }
+        setIsGenerating(false);
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -191,6 +298,36 @@ export default function AdminAgendaPage() {
                         </div>
                         <button type="submit" className="bg-[#2E7D32] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#1B5E20] transition-colors shadow-md h-[48px]">
                             Abrir
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {/* Formulario Generador Masivo Mensual */}
+            <div className="bg-[#FAEDDF] p-8 rounded-[2rem] shadow-sm border border-[#EACCA4] flex flex-col xl:flex-row gap-8 items-start relative overflow-hidden">
+                {isGenerating && (
+                    <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                        <div className="w-8 h-8 border-4 border-[#8B5E3C] border-t-transparent flex rounded-full animate-spin"></div>
+                        <p className="mt-4 font-bold text-[#8B5E3C]">Procesando mes entero...</p>
+                    </div>
+                )}
+                <div className="flex-1 w-full">
+                    <h2 className="text-xl font-bold text-[#8B5E3C] mb-2 flex items-center gap-2">
+                        <Zap className="w-5 h-5"/> Generador de Mes (Plantilla Fija)
+                    </h2>
+                    <p className="text-[#6B5A4E] text-sm mb-6">Inyecta todos los bloques de la semana automáticamente para el mes que selecciones.</p>
+                    
+                    <form onSubmit={handleGenerateMonth} className="flex flex-col md:flex-row gap-4 items-end">
+                        <div className="flex flex-col gap-2 flex-1 relative">
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase text-shadow">Seleccionar Mes</label>
+                            <input type="month" required value={genMonth} onChange={(e)=>setGenMonth(e.target.value)} className="px-4 py-3 rounded-xl bg-white border border-[#EACCA4] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
+                        </div>
+                        <div className="flex flex-col gap-2 w-32">
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase" title="Cupos para cada bloque generado">Cupos Default</label>
+                            <input type="number" min="1" required value={genCapacity} onChange={(e)=>setGenCapacity(Number(e.target.value))} className="px-4 py-3 rounded-xl bg-white border border-[#EACCA4] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] text-center"/>
+                        </div>
+                        <button type="submit" disabled={isGenerating} className="bg-[#8B5E3C] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md h-[48px] flex items-center gap-2 disabled:opacity-50">
+                            {isGenerating ? "Generando..." : "Generar Mes Completo"}
                         </button>
                     </form>
                 </div>
