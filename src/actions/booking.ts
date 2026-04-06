@@ -13,13 +13,14 @@ export async function createBookingAction(formData: FormData) {
   const selectedService = formData.get('selectedService') as string;
   const selectedDate = formData.get('selectedDate') as string;
   const selectedTime = formData.get('selectedTime') as string;
+  const isoDate = formData.get('isoDate') as string;
 
-  if (!name || !email || !selectedService || !selectedDate || !selectedTime) {
+  if (!name || !email || !selectedService || !isoDate) {
     return { success: false, error: 'Por favor, completa todos los campos para agendar.' };
   }
 
-  // Se arma la cadena final ISO
-  const finalDateTime = `${selectedDate}T${selectedTime}:00`;
+  // Se usa directamente el ISO date exacto del cupo para evitar errores de parseo por zonas o idiomas
+  const finalDateTime = isoDate;
 
   try {
     const { error } = await supabase

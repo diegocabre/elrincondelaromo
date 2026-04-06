@@ -86,6 +86,7 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
 
         formData.append('selectedDate', dateString);
         formData.append('selectedTime', timeString);
+        formData.append('isoDate', selectedSlot.isoDate);
 
         const result = await createBookingAction(formData);
 
