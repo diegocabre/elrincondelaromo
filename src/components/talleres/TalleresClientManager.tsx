@@ -74,7 +74,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                 ) : (
                     <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
                     {activos.map(taller => (
-                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => handleCheckout(taller)} actionText="Inscribirme" isRealizado={false} />
+                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => handleCheckout(taller)} actionText={taller.status === 'lleno' ? 'Cupos Agotados' : 'Inscribirme'} isRealizado={false} isLleno={taller.status === 'lleno'} />
                     ))}
                     </motion.div>
                 )}
@@ -88,7 +88,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                 ) : (
                     <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
                     {realizados.map(taller => (
-                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => openGallery(taller.id)} actionText="Ver Galería" isRealizado={true} />
+                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => openGallery(taller.id)} actionText="Ver Galería" isRealizado={true} isLleno={false} />
                     ))}
                     </motion.div>
                 )}
@@ -139,7 +139,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
   );
 }
 
-function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado }: { taller: Taller, handleAction: () => void, actionText: string, isRealizado: boolean }) {
+function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isLleno }: { taller: Taller, handleAction: () => void, actionText: string, isRealizado: boolean, isLleno: boolean }) {
     return (
         <motion.div 
             variants={fadeUp} 
@@ -161,8 +161,9 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado }: {
 
             {/* Contenido sobre Imagen */}
             <div className="relative z-20 p-8 flex flex-col h-full justify-end text-white">
-                <span className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full mb-4 self-start shadow-md backdrop-blur-md ${isRealizado ? 'bg-white/20 text-white' : 'bg-[#EACCA4] text-[#2c231d]'}`}>
-                    {isRealizado ? 'Realizado' : taller.category}
+                <span className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full mb-4 self-start shadow-md backdrop-blur-md flex gap-2 ${isRealizado ? 'bg-white/20 text-white' : 'bg-[#EACCA4] text-[#2c231d]'}`}>
+                    <span>{isRealizado ? 'Realizado' : taller.category}</span>
+                    {isLleno && <span className="bg-red-600 text-white px-2 rounded-full">AGOTADO</span>}
                 </span>
                 
                 <h3 className="text-3xl font-bold text-white mb-2">{taller.title}</h3>
@@ -183,7 +184,8 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado }: {
                     )}
                     <button 
                         onClick={handleAction}
-                        className={`px-8 py-3 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 flex-shrink-0 ${isRealizado ? 'w-full bg-white/20 text-white hover:bg-white hover:text-[#2c231d] backdrop-blur-sm' : 'w-full xl:w-auto bg-[#EACCA4] text-[#2c231d] hover:bg-white'}`}
+                        disabled={isLleno}
+                        className={`px-8 py-3 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 flex-shrink-0 disabled:cursor-not-allowed ${isRealizado ? 'w-full bg-white/20 text-white hover:bg-white hover:text-[#2c231d] backdrop-blur-sm' : isLleno ? 'w-full xl:w-auto bg-gray-500 text-gray-200' : 'w-full xl:w-auto bg-[#EACCA4] text-[#2c231d] hover:bg-white'}`}
                     >
                         {isRealizado && <ImageIcon className="w-4 h-4"/>}
                         {actionText}

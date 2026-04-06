@@ -1,52 +1,41 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const dateParam = searchParams.get('date');
-
-    if (!dateParam) {
-        return NextResponse.json({ error: 'Falta parámetro de fecha' }, { status: 400 });
-    }
-
+export async function GET() {
+    // Al ser un llamado global sin parámetros, quitamos la dependencia a un día
     try {
-        // Fechas limite para ese dia (YYYY-MM-DD)
-        const startOfDay = `${dateParam}T00:00:00.000Z`;
-        const endOfDay = `${dateParam}T23:59:59.999Z`;
+        const nowIso = new Date().toISOString();
 
-        // 1. Traer horas HABILITADAS (Whitelist)
+        // 1. Traer todas las horas HABILITADAS futuras
         const { data: availableArray } = await supabase
             .from('available_hours')
-            .select('start_time')
-            .gte('start_time', startOfDay)
-            .lte('start_time', endOfDay);
+            .select('id, start_time')
+            .gte('start_time', nowIso)
+            .order('start_time', { ascending: true });
 
-        const enabledTimes = new Set<string>();
-        availableArray?.forEach(a => {
-             // Formateo seguro para extraer HH:MM
-             const timeStr = new Date(a.start_time).toISOString().substring(11, 16);
-             enabledTimes.add(timeStr);
-        });
-
-        // 2. Traer reservas existentes de ese día
+        // 2. Traer reservas futuras
         const { data: bookingsArray } = await supabase
             .from('bookings')
             .select('date')
-            .gte('date', startOfDay)
-            .lte('date', endOfDay);
+            .gte('date', nowIso);
 
         const occupiedTimes = new Set<string>();
         bookingsArray?.forEach(b => {
-             const timeStr = new Date(b.date).toISOString().substring(11, 16);
-             occupiedTimes.add(timeStr);
+             // El campo de la bd b.date está en ISO
+             occupiedTimes.add(new Date(b.date).getTime().toString()); 
         });
 
-        // 3. Cruzar: Habilitadas Menos Ocupadas
-        const finalAvailableHours = Array.from(enabledTimes)
-             .filter(hour => !occupiedTimes.has(hour))
-             .sort(); // ordenadas de menor a mayor
+        // 3. Crear matriz global indicando qué hora está abierta y cual Llenada/Asignada
+        const allSlots = (availableArray || []).map(a => {
+            const timeNum = new Date(a.start_time).getTime().toString();
+            return {
+                id: a.id,
+                isoDate: a.start_time, // String ISO original de BD
+                isFull: occupiedTimes.has(timeNum)
+            };
+        });
 
-        return NextResponse.json({ date: dateParam, available: finalAvailableHours });
+        return NextResponse.json({ slots: allSlots });
     } catch {
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
     }

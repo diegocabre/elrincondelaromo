@@ -178,6 +178,7 @@ export default function AdminTalleresPage() {
                             <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Estado del Taller</label>
                             <select required value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]">
                                 <option value="activo">Activo (En Venta)</option>
+                                <option value="lleno">Agotado (Lleno)</option>
                                 <option value="realizado">Realizado (Galería)</option>
                             </select>
                         </div>
@@ -243,8 +244,9 @@ function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatu
             )}
 
             <div className="p-6 flex flex-col items-start gap-4 w-full h-full">
-                <span className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${t.status === 'realizado' ? 'bg-[#EEEEEE] text-[#6B5A4E]' : 'bg-[#E8D1B5]/30 text-[#8B5E3C]'}`}>
+                <span className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full flex gap-2 ${t.status === 'realizado' ? 'bg-[#EEEEEE] text-[#6B5A4E]' : 'bg-[#E8D1B5]/30 text-[#8B5E3C]'}`}>
                     {t.status === 'realizado' ? 'Realizado' : t.category}
+                    {t.status === 'lleno' && <span className="bg-red-100 text-red-700 px-2 rounded-full border border-red-200">LLENO</span>}
                 </span>
                 <h3 className="text-xl font-bold text-[#4A3B32]">{t.title}</h3>
                 <p className="text-[#6B5A4E] text-sm leading-relaxed flex-1 line-clamp-3">{t.description}</p>
@@ -254,10 +256,20 @@ function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatu
                     <div className="text-lg font-bold text-[#4A3B32]">${Number(t.price).toLocaleString('es-CL')}</div>
                 </div>
 
-                <div className="w-full flex flex-col sm:flex-row gap-2 mt-2">
+                <div className="w-full flex gap-2 mt-2 flex-wrap text-center">
+                    {t.status === 'activo' && (
+                        <button onClick={() => handleUpdateStatus(t.id, 'lleno')} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
+                            <Edit3 className="w-4 h-4" /> Marcar Lleno
+                        </button>
+                    )}
+                    {t.status === 'lleno' && (
+                        <button onClick={() => handleUpdateStatus(t.id, 'activo')} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9] hover:bg-[#C8E6C9] transition-colors font-semibold text-[10px] uppercase tracking-wide">
+                            <Edit3 className="w-4 h-4" /> Abrir Cupos
+                        </button>
+                    )}
                     {t.status !== 'realizado' && (
-                        <button onClick={() => handleUpdateStatus(t.id, 'realizado')} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#4A3B32] text-white hover:bg-[#2c231d] transition-colors font-semibold text-xs uppercase tracking-wide">
-                            <Edit3 className="w-4 h-4" /> Finalizar
+                        <button onClick={() => handleUpdateStatus(t.id, 'realizado')} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-[#4A3B32] text-white hover:bg-[#2c231d] transition-colors font-semibold text-[10px] uppercase tracking-wide">
+                            Finalizar
                         </button>
                     )}
                     {t.status === 'realizado' && (

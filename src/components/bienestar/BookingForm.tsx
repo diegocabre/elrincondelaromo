@@ -16,28 +16,29 @@ interface Therapy {
     description: string;
 }
 
+interface GlobalSlot {
+    id: string;
+    isoDate: string;
+    isFull: boolean;
+}
+
 export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
-    const [selectedDate, setSelectedDate] = useState('');
-    const [selectedTime, setSelectedTime] = useState('');
-    const [availableTimes, setAvailableTimes] = useState<string[]>([]);
-    const [loadingTimes, setLoadingTimes] = useState(false);
+    const [slots, setSlots] = useState<GlobalSlot[]>([]);
+    const [loadingTimes, setLoadingTimes] = useState(true);
+
+    const [selectedSlot, setSelectedSlot] = useState<GlobalSlot | null>(null);
 
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        if (!selectedDate) return;
-        
         const fetchTimes = async () => {
-            setLoadingTimes(true);
             try {
-                // Sigue utilizando la API route pre-existente o puedes pasar a Server Action después, 
-                // pero esto mantiene baja latencia para el calnedario
-                const res = await fetch(`/api/availability?date=${selectedDate}`);
+                const res = await fetch(`/api/availability`);
                 const data = await res.json();
-                if (data.available) {
-                    setAvailableTimes(data.available);
+                if (data.slots) {
+                    setSlots(data.slots);
                 }
             } catch (err) {
                 console.error("Error buscando horas", err);
@@ -47,29 +48,47 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
         };
 
         fetchTimes();
-        setSelectedTime(''); // Reset hora si cambia la fecha
-    }, [selectedDate]);
+    }, []);
 
-    // Nueva conexión con Server Action
+    // Agrupar los cupos por fecha local
+    const groupedSlots = slots.reduce((acc, slot) => {
+        const d = new Date(slot.isoDate);
+        const dateKey = d.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Santiago' });
+        const capitalDate = dateKey.charAt(0).toUpperCase() + dateKey.slice(1);
+        
+        if (!acc[capitalDate]) acc[capitalDate] = [];
+        acc[capitalDate].push(slot);
+        return acc;
+    }, {} as Record<string, GlobalSlot[]>);
+
     const handleSubmit = async (formData: FormData) => {
+        if (!selectedSlot) {
+            setErrorMessage('Debes seleccionar un horario.');
+            return;
+        }
+
         setLoading(true);
         setSuccessMessage('');
         setErrorMessage('');
         
-        // Adjuntamos datos sueltos que no provienen del Form directamente (los radio buttons si están en el form, 
-        // pero la hora está controlada por state de botones, por lo que la interceptamos y adjuntamos al form temporalmente)
-        formData.append('selectedTime', selectedTime);
+        const d = new Date(selectedSlot.isoDate);
+        // Formatear localmente para enviar retrocompatibilidad a la BD y a los emails (evitar GMT quirks)
+        const dateString = d.toLocaleDateString('sv-SE', { timeZone: 'America/Santiago' }); // 'YYYY-MM-DD' nativo local
+        const timeString = d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Santiago' });
+
+        formData.append('selectedDate', dateString);
+        formData.append('selectedTime', timeString);
 
         const result = await createBookingAction(formData);
 
         if (result.success && result.message) {
             setSuccessMessage(result.message);
-            // Limpia Form UI
-            setSelectedDate('');
-            setSelectedTime('');
-            setAvailableTimes([]);
-            // Resetea HTML form elements
+            setSelectedSlot(null);
             document.querySelector("form")?.reset();
+            // Refetch para que se marque como Lleno
+            const res = await fetch(`/api/availability`);
+            const data = await res.json();
+            if (data.slots) setSlots(data.slots);
         } else {
             setErrorMessage(result.error || 'Fallo desconocido.');
         }
@@ -82,7 +101,7 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
             <div className="absolute top-0 left-0 w-full h-2 bg-[#8B5E3C]" />
             
             <h2 className="text-2xl font-bold text-[#4A3B32] mb-2 mt-2">Agenda tu Cita</h2>
-            <p className="text-[#6B5A4E] text-sm mb-6">Selecciona el servicio, elige una fecha para ver las horas disponibles, e ingresa tus datos.</p>
+            <p className="text-[#6B5A4E] text-sm mb-6">Selecciona tu terapia e inscríbete de inmediato en nuestros cupos habilitados a continuación.</p>
 
             {successMessage && (
                 <div className="mb-6 p-4 bg-[#E8F5E9] border border-[#A5D6A7] text-[#2E7D32] rounded-xl text-sm font-medium">
@@ -110,7 +129,7 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Correo Electrónico</label>
+                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Correo</label>
                         <input 
                             name="email"
                             type="email" 
@@ -136,51 +155,65 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                     </select>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Día Abierto</label>
-                    <input 
-                        name="selectedDate"
-                        type="date" 
-                        required
-                        value={selectedDate}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"
-                    />
+                <div className="flex flex-col gap-2 pt-2">
+                    <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Cupos Abiertos</label>
+                    {loadingTimes ? (
+                        <p className="text-[#6B5A4E] text-sm animate-pulse py-4">Buscando disponibilidades...</p>
+                    ) : Object.keys(groupedSlots).length === 0 ? (
+                        <div className="p-4 bg-[#FFEBEE] border border-[#FFCDD2] rounded-xl text-[#C62828] text-sm mt-1">
+                            Aún no han habilitado cupos. Vuelve pronto o consúltanos.
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-6 mt-2 max-h-[350px] overflow-y-auto pr-2 rounded-xl custom-scrollbar">
+                            {Object.entries(groupedSlots).map(([date, daySlots]) => (
+                                <div key={date} className="flex flex-col gap-3">
+                                    <h4 className="text-sm font-bold text-[#4A3B32] border-b border-[#EACCA4]/30 pb-1">{date}</h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        {daySlots.map(slot => {
+                                            const d = new Date(slot.isoDate);
+                                            const timeString = d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Santiago' });
+                                            
+                                            if (slot.isFull) {
+                                                return (
+                                                    <div key={slot.id} className="py-3 px-2 rounded-xl border bg-[#F5F5F5] border-gray-200 text-gray-400 text-sm font-medium flex flex-col items-center justify-center relative overflow-hidden opacity-70" title="Cupo ya reservado">
+                                                        <span className="line-through">{timeString}</span>
+                                                        <span className="text-[10px] font-bold uppercase mt-1 text-red-800/60 bg-red-100/50 px-2 py-0.5 rounded-full">Lleno</span>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return (
+                                                <button
+                                                    key={slot.id}
+                                                    type="button"
+                                                    onClick={() => setSelectedSlot(slot)}
+                                                    className={`py-3 px-2 rounded-xl border text-sm font-bold transition-all flex flex-col items-center shadow-sm hover:shadow-md ${selectedSlot?.id === slot.id ? 'bg-[#8B5E3C] text-white border-[#8B5E3C] scale-105' : 'bg-[#FAEDDF]/40 text-[#4A3B32] border-[#EACCA4] hover:bg-[#EACCA4]/30 hover:border-[#8B5E3C]'}`}
+                                                >
+                                                    {timeString}
+                                                    <span className={`text-[10px] font-medium uppercase mt-1 tracking-wider ${selectedSlot?.id === slot.id ? 'text-white/80' : 'text-[#8B5E3C]'}`}>Abonar Cita</span>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                {selectedDate && (
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Horas Disponibles</label>
-                        {loadingTimes ? (
-                            <p className="text-[#6B5A4E] text-sm">Cargando cupos...</p>
-                        ) : availableTimes.length > 0 ? (
-                            <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                                {availableTimes.map(time => (
-                                    <button
-                                        key={time}
-                                        type="button"
-                                        onClick={() => setSelectedTime(time)}
-                                        className={`py-2 rounded-xl border text-sm font-medium transition-all ${selectedTime === time ? 'bg-[#8B5E3C] text-white border-[#8B5E3C]' : 'bg-transparent text-[#6B5A4E] border-[#EACCA4]/50 hover:border-[#8B5E3C]'}`}
-                                    >
-                                        {time}
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="p-4 bg-[#FFEBEE] border border-[#FFCDD2] rounded-xl text-[#C62828] text-sm">
-                                No hay horas disponibles para el día seleccionado. Intenta otro día.
-                            </div>
-                        )}
-                    </div>
-                )}
+                <style dangerouslySetInnerHTML={{__html: `
+                    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                    .custom-scrollbar::-webkit-scrollbar-track { background: #FAEDDF; border-radius: 10px; }
+                    .custom-scrollbar::-webkit-scrollbar-thumb { background: #EACCA4; border-radius: 10px; }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #8B5E3C; }
+                `}} />
 
                 <button 
                     type="submit"
-                    disabled={loading || !selectedTime}
-                    className="mt-4 w-full bg-[#8B5E3C] text-white px-6 py-4 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading || !selectedSlot}
+                    className="mt-6 w-full bg-[#8B5E3C] text-white px-6 py-4 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                 >
-                    {loading ? "Procesando Reserva..." : (!selectedTime ? "Selecciona una hora" : "Confirmar Reserva")}
+                    {loading ? "Procesando Reserva..." : (!selectedSlot ? "Selecciona un cupo en la lista" : "Confirmar Reserva")}
                 </button>
             </form>
         </motion.div>
