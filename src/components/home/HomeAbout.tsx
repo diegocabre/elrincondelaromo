@@ -39,7 +39,7 @@ export default function HomeAbout() {
             SOMOS
           </h2>
           <p className="text-xl md:text-2xl text-[#6B5A4E] leading-relaxed font-light mb-8 italic border-l-4 border-[#8B5E3C] pl-6">
-            "Nuestro propósito es ofrecer un espacio cálido y acogedor donde puedes desarrollar tus habilidades, disfrutar un buen café, y encontrar equilibrio en tu día a día."
+            &quot;Nuestro propósito es ofrecer un espacio cálido y acogedor donde puedes desarrollar tus habilidades, disfrutar un buen café, y encontrar equilibrio en tu día a día.&quot;
           </p>
           <Link href="/about">
             <span className="text-[#8B5E3C] font-bold flex items-center gap-2 hover:gap-4 transition-all uppercase tracking-wide text-sm mt-4">
