@@ -67,7 +67,7 @@ export const NavBar = () => {
             </div>
 
             {/* Menú móvil */}
-            <div className={`md:hidden absolute w-full bg-[#FDFCF8] border-b border-[#E8D1B5] shadow-lg transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-96 py-6' : 'max-h-0 py-0'}`}>
+            <div className={`md:hidden absolute w-full bg-[#FDFCF8] border-b border-[#E8D1B5] shadow-lg transition-all duration-300 ${isOpen ? 'max-h-[85vh] py-6 overflow-y-auto' : 'max-h-0 py-0 overflow-hidden'}`}>
                 <div className="flex flex-col gap-6 px-6">
                     {menuItems.map((item) => (
                         <NavLink

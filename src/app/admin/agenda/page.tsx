@@ -64,7 +64,10 @@ export default function AdminAgendaPage() {
             alert('Debes seleccionar una terapia a la cual asociar el horario.');
             return;
         }
-        const dateIso = `${openDate}T${openTime}:00`;
+        const [year, month, day] = openDate.split('-').map(Number);
+        const [hour, minute] = openTime.split(':').map(Number);
+        const d = new Date(year, month - 1, day, hour, minute);
+        const dateIso = d.toISOString();
         
         const { error } = await supabase.from('available_hours').insert([
             { start_time: dateIso, therapy_id: openTherapyId }
