@@ -49,22 +49,23 @@ export default function CafeteriaCowork() {
 
           <div className="w-full md:w-1/2 flex flex-col items-start px-4 md:px-10">
             <h2 className="text-3xl md:text-5xl font-bold text-[#4A3B32] mb-6">Cafetería</h2>
+            <p className="text-lg text-[#6B5A4E] leading-relaxed mb-4 font-light">
+               Disfruta de una carta simple, rica y consciente, con opciones dulces y saladas, café de especialidad y alternativas pensadas para grandes y chicos.
+            </p>
             <p className="text-lg text-[#6B5A4E] leading-relaxed mb-8 font-light">
-               Un espacio familiar y acogedor para venir por la mejor selección de desayunos, onces y pastelería. Disfruta de una pausa con nuestro exquisito café de especialidad.
+               Un lugar ideal para hacer una pausa, conversar o acompañar el tiempo mientras tus hijos participan en sus actividades.
             </p>
             
-            <div className="bg-[#EACCA4]/30 border border-[#EACCA4] rounded-3xl p-8 w-full backdrop-blur-sm">
-                <span className="block text-[#8B5E3C] font-semibold text-lg mb-4 uppercase tracking-wide">Nuestro Menú</span>
-                <div className="flex flex-col gap-3">
-                    <button className="w-full bg-white text-[#4A3B32] px-6 py-4 rounded-xl shadow-sm hover:shadow-md hover:bg-[#FDFCF8] transition-all flex justify-between items-center group">
-                        <span className="font-medium">Carta consumo en local</span>
-                        <span className="text-[#8B5E3C] transform transition-transform group-hover:translate-x-1">→</span>
-                    </button>
-                    <button className="w-full bg-[#8B5E3C] text-white px-6 py-4 rounded-xl shadow-sm hover:shadow-lg hover:bg-[#6D492E] transition-all flex justify-between items-center group">
-                        <span className="font-medium">Carta para llevar</span>
-                        <span className="transform transition-transform group-hover:translate-x-1">→</span>
-                    </button>
-                </div>
+            <div className="w-full">
+                <a 
+                    href="https://menu.fu.do/rincondelaromo/qr-menu?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGn_gq" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full bg-[#8B5E3C] text-white px-6 py-4 rounded-xl shadow-sm hover:shadow-lg hover:bg-[#6D492E] transition-all flex justify-between items-center group max-w-sm"
+                >
+                    <span className="font-medium">Carta consumo local</span>
+                    <span className="transform transition-transform group-hover:translate-x-1">→</span>
+                </a>
             </div>
           </div>
         </motion.section>
@@ -97,26 +98,12 @@ export default function CafeteriaCowork() {
           <div className="w-full md:w-1/2 flex flex-col items-start px-4 md:px-10">
             <span className="text-[#8B5E3C] font-semibold tracking-wide uppercase text-sm mb-4 block">Productividad & Enfoque</span>
             <h2 className="text-3xl md:text-5xl font-bold text-[#4A3B32] mb-6">Coworking</h2>
-            <p className="text-lg text-[#6B5A4E] leading-relaxed mb-8 font-light">
-              Un lugar pensado para que madres, padres, profesionales independientes y emprendedores tengan un espacio cálido, conectado y muy cómodo para teletrabajar.
+            <p className="text-lg text-[#6B5A4E] leading-relaxed mb-4 font-light">
+              Contamos con un espacio de coworking pensado para quienes necesitan concentrarse.
             </p>
-            <ul className="space-y-4 text-[#4A3B32] mb-8 font-medium">
-                <li className="flex items-center gap-3">
-                    <span className="w-2 h-2 bg-[#8B5E3C] rounded-full"></span>
-                    Wifi de alta velocidad
-                </li>
-                <li className="flex items-center gap-3">
-                    <span className="w-2 h-2 bg-[#8B5E3C] rounded-full"></span>
-                    Ambiente climatizado y luminoso
-                </li>
-                <li className="flex items-center gap-3">
-                    <span className="w-2 h-2 bg-[#8B5E3C] rounded-full"></span>
-                    Descuento en cafetería
-                </li>
-            </ul>
-            <button className="px-10 py-4 bg-transparent border-2 border-[#8B5E3C] text-[#8B5E3C] rounded-full font-bold hover:bg-[#8B5E3C] hover:text-white transition-all duration-300">
-                Ver Planes
-            </button>
+            <p className="text-lg text-[#6B5A4E] leading-relaxed font-light">
+              Un lugar cómodo, con buena conexión y un ambiente que invita a la productividad.
+            </p>
           </div>
         </motion.section>
 
