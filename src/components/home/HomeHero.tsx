@@ -30,7 +30,10 @@ export default function HomeHero() {
         <span className="text-[#E8D1B5] font-medium tracking-[0.2em] uppercase text-sm mb-4">
           Un refugio en la ciudad
         </span>
-        <h1 className="text-5xl md:text-7xl font-bold text-white drop-shadow-sm mb-6 leading-tight">
+        <h1 
+          className="text-6xl md:text-8xl text-white drop-shadow-md mb-6 leading-tight"
+          style={{ fontFamily: 'var(--font-dancing)' }}
+        >
           donde la comunidad <br className="hidden md:block" /> florece.
         </h1>
         {/* Removed paragraph text underneath since it's not in the mockup */}
