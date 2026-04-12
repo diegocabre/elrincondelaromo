@@ -172,7 +172,16 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                 </div>
 
                 <div className="flex flex-col gap-2 pt-2">
-                    <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Cupos Abiertos</label>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-t border-[#EACCA4]/30 pt-4 mt-2">
+                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Cupos Abiertos</label>
+                        <button 
+                            type="submit"
+                            disabled={loading || !selectedSlot}
+                            className="bg-[#8B5E3C] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed md:w-auto w-full text-base"
+                        >
+                            {loading ? "Procesando Reserva..." : (!selectedSlot ? "Selecciona un cupo abajo" : "Confirmar Reserva")}
+                        </button>
+                    </div>
                     {loadingTimes ? (
                         <p className="text-[#6B5A4E] text-sm animate-pulse py-4">Buscando disponibilidades...</p>
                     ) : !selectedTherapyTitle ? (
@@ -184,7 +193,7 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                             Aún no han habilitado cupos. Vuelve pronto o consúltanos.
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-6 mt-2 max-h-[350px] overflow-y-auto pr-2 rounded-xl custom-scrollbar">
+                        <div className="flex flex-col gap-6 mt-2 max-h-[350px] overflow-y-auto pr-2 rounded-xl custom-scrollbar border border-[#EACCA4]/30 p-4 bg-[#FDFCF8]/50 shadow-inner">
                             {Object.entries(groupedSlots).map(([date, daySlots]) => (
                                 <div key={date} className="flex flex-col gap-3">
                                     <h4 className="text-sm font-bold text-[#4A3B32] border-b border-[#EACCA4]/30 pb-1">{date}</h4>
@@ -227,14 +236,6 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                     .custom-scrollbar::-webkit-scrollbar-thumb { background: #EACCA4; border-radius: 10px; }
                     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #8B5E3C; }
                 `}} />
-
-                <button 
-                    type="submit"
-                    disabled={loading || !selectedSlot}
-                    className="mt-6 w-full bg-[#8B5E3C] text-white px-6 py-4 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-                >
-                    {loading ? "Procesando Reserva..." : (!selectedSlot ? "Selecciona un cupo en la lista" : "Confirmar Reserva")}
-                </button>
             </form>
         </motion.div>
     );
