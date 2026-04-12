@@ -89,7 +89,7 @@ export default function HomeReviews() {
                                 ))}
                             </div>
                             <p className="text-[#4A3B32] text-lg md:text-xl italic font-light mb-6">
-                                "{REVIEWS[currentIndex].text}"
+                                &quot;{REVIEWS[currentIndex].text}&quot;
                             </p>
                             <h4 className="font-bold text-[#4A3B32]">{REVIEWS[currentIndex].name}</h4>
                             <span className="text-[#6B5A4E] text-xs uppercase tracking-wider mt-1 flex items-center gap-1 justify-center">
@@ -105,8 +105,8 @@ export default function HomeReviews() {
                         <button
                             key={idx}
                             onClick={() => handleDotClick(idx)}
-                            className={\`w-3 h-3 rounded-full transition-all duration-300 \${currentIndex === idx ? 'bg-[#8B5E3C] scale-125' : 'bg-[#EACCA4] hover:bg-[#8B5E3C]/60'}\`}
-                            aria-label={\`Ir a reseña \${idx + 1}\`}
+                            className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === idx ? 'bg-[#8B5E3C] scale-125' : 'bg-[#EACCA4] hover:bg-[#8B5E3C]/60'}`}
+                            aria-label={`Ir a reseña ${idx + 1}`}
                         />
                     ))}
                 </div>
