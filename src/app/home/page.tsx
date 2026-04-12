@@ -4,6 +4,7 @@ import HomeEspacios from "@/components/home/HomeEspacios";
 import HomeServices from "@/components/home/HomeServices";
 import HomeAbout from "@/components/home/HomeAbout";
 import HomeGallery from "@/components/home/HomeGallery";
+import HomeReviews from "@/components/home/HomeReviews";
 import HomeNewsletter from "@/components/home/HomeNewsletter";
 
 export default function HomePage() {
@@ -15,6 +16,7 @@ export default function HomePage() {
       <HomeServices />
       <HomeAbout />
       <HomeGallery />
+      <HomeReviews />
       <HomeNewsletter />
     </div>
   );
