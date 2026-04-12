@@ -32,10 +32,11 @@ interface WorkshopPhoto {
 }
 
 export default function TalleresClientManager({ talleresData }: { talleresData: Taller[] }) {
-  // Estados Galería
+  // Estados Galería y Detalles
   const [galleryModalId, setGalleryModalId] = useState<string | null>(null);
   const [galleryPhotos, setGalleryPhotos] = useState<WorkshopPhoto[]>([]);
   const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
+  const [detailModal, setDetailModal] = useState<Taller | null>(null);
 
   const handleCheckout = async (taller: Taller) => {
     try {
@@ -74,7 +75,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                 ) : (
                     <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
                     {activos.map(taller => (
-                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => handleCheckout(taller)} actionText={taller.status === 'lleno' ? 'Cupos Agotados' : 'Inscribirme'} isRealizado={false} isLleno={taller.status === 'lleno'} />
+                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => handleCheckout(taller)} actionText={taller.status === 'lleno' ? 'Cupos Agotados' : 'Inscribirme'} isRealizado={false} isLleno={taller.status === 'lleno'} onClickDetails={() => setDetailModal(taller)} />
                     ))}
                     </motion.div>
                 )}
@@ -88,7 +89,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                 ) : (
                     <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
                     {realizados.map(taller => (
-                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => openGallery(taller.id)} actionText="Ver Galería" isRealizado={true} isLleno={false} />
+                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => openGallery(taller.id)} actionText="Ver Galería" isRealizado={true} isLleno={false} onClickDetails={() => setDetailModal(taller)} />
                     ))}
                     </motion.div>
                 )}
@@ -134,16 +135,111 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                     </div>
                 </motion.div>
             )}
+
+            {/* LIGHTBOX DETALLES DEL TALLER */}
+            {detailModal && (
+                <WorkshopDetailModal 
+                    taller={detailModal} 
+                    onClose={() => setDetailModal(null)} 
+                    handleAction={() => { 
+                        setDetailModal(null); 
+                        handleCheckout(detailModal); 
+                    }} 
+                />
+            )}
         </AnimatePresence>
     </>
   );
 }
 
-function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isLleno }: { taller: Taller, handleAction: () => void, actionText: string, isRealizado: boolean, isLleno: boolean }) {
+function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller, onClose: () => void, handleAction: () => void }) {
+    let fullText = taller.description;
+    try {
+        const parsed = JSON.parse(taller.description);
+        if (parsed.full) fullText = parsed.full;
+    } catch {}
+
+    const isRealizado = taller.status === 'realizado';
+    const isLleno = taller.status === 'lleno';
+
+    return (
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-[#4A3B32]/80 backdrop-blur-sm flex items-center justify-center p-4 relative"
+            onClick={onClose}
+        >
+            <motion.div 
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                className="bg-[#FDFCF8] w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[2rem] shadow-2xl flex flex-col items-center"
+                onClick={e => e.stopPropagation()}
+            >
+                {taller.image_url && (
+                    <div className="w-full aspect-[21/9] relative bg-[#2c231d]">
+                        <img src={taller.image_url} alt={taller.title} className="w-full h-full object-cover opacity-90" />
+                        <button onClick={onClose} className="absolute top-4 right-4 bg-black/40 text-white p-2 rounded-full hover:bg-black/80 transition-colors backdrop-blur-md">
+                            <X size={24} />
+                        </button>
+                    </div>
+                )}
+                
+                <div className="p-8 pb-10 w-full flex flex-col text-left relative">
+                    {!taller.image_url && (
+                        <button onClick={onClose} className="absolute top-4 right-4 bg-[#FDFCF8] text-[#8B5E3C] border border-[#EACCA4] p-2 rounded-full hover:bg-[#EACCA4] transition-colors shadow-sm">
+                            <X size={20} />
+                        </button>
+                    )}
+
+                    <span className="text-[#8B5E3C] text-xs font-bold uppercase tracking-widest mb-2">{taller.category}</span>
+                    <h2 className="text-3xl font-bold text-[#4A3B32] mb-6">{taller.title}</h2>
+                    
+                    <div className="flex items-center gap-2 text-[#6B5A4E] text-sm font-medium mb-8 bg-[#FAEDDF] w-max px-4 py-2 rounded-xl">
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        {taller.date_info}
+                    </div>
+
+                    <div className="mb-8 border-l-4 border-[#8B5E3C] pl-4">
+                        <p className="text-[#4A3B32] text-md whitespace-pre-wrap leading-relaxed">{fullText}</p>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-center justify-between mt-auto border-t border-[#EACCA4]/30 pt-6 gap-4">
+                        <span className="text-3xl font-bold text-[#4A3B32]">
+                            ${Number(taller.price).toLocaleString('es-CL')}
+                        </span>
+                        
+                        {(isRealizado || isLleno) ? (
+                            <button onClick={onClose} className="px-8 py-4 bg-[#8B5E3C] text-white rounded-xl font-bold shadow-lg hover:bg-[#6D492E] w-full md:w-auto">
+                                CERRAR DATOS
+                            </button>
+                        ) : (
+                            <button onClick={handleAction} className="px-8 py-4 bg-[#D4A373] hover:bg-[#C28E5C] text-white rounded-xl font-bold shadow-lg w-full md:w-auto text-lg hover:-translate-y-1 transition-transform">
+                                INSCRIBIRME AHORA
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+}
+
+function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isLleno, onClickDetails }: { taller: Taller, handleAction: () => void, actionText: string, isRealizado: boolean, isLleno: boolean, onClickDetails: () => void }) {
+    
+    // Extractor del JSON para el resumen
+    let summaryText = taller.description;
+    try {
+        const parsed = JSON.parse(taller.description);
+        if (parsed.short) summaryText = parsed.short;
+    } catch {}
+
     return (
         <motion.div 
             variants={fadeUp} 
-            className={`relative min-h-[460px] rounded-[2rem] shadow-sm hover:shadow-2xl transition-all duration-300 border border-[#EACCA4]/20 flex flex-col justify-end overflow-hidden group`}
+            onClick={onClickDetails}
+            className={`relative min-h-[460px] rounded-[2rem] shadow-sm hover:shadow-2xl transition-all duration-300 border border-[#EACCA4]/20 flex flex-col justify-end overflow-hidden group cursor-pointer`}
         >
             {/* Area de Imagen Absoluta */}
             {taller.image_url ? (
@@ -160,7 +256,7 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isL
             <div className="absolute inset-0 bg-gradient-to-t from-[#1A1512] via-[#2c231d]/60 to-transparent z-10"></div>
 
             {/* Contenido sobre Imagen */}
-            <div className="relative z-20 p-8 flex flex-col h-full justify-end text-white">
+            <div className="relative z-20 p-8 flex flex-col h-full justify-end text-white pointer-events-none">
                 <span className={`inline-flex px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full mb-4 self-start shadow-md backdrop-blur-md gap-2 ${isRealizado ? 'bg-white/20 text-white' : 'bg-[#EACCA4] text-[#2c231d]'}`}>
                     <span>{isRealizado ? 'Realizado' : taller.category}</span>
                     {isLleno && <span className="bg-red-600 text-white px-2 rounded-full">AGOTADO</span>}
@@ -168,7 +264,7 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isL
                 
                 <h3 className="text-3xl font-bold text-white mb-2">{taller.title}</h3>
                 <p className="text-white/80 text-sm leading-relaxed mb-4 flex-1 line-clamp-3">
-                    {taller.description}
+                    {summaryText}
                 </p>
                 
                 <div className="flex items-center gap-2 text-[#EACCA4] text-sm font-medium mb-6">
@@ -176,15 +272,15 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isL
                     {taller.date_info}
                 </div>
                 
-                <div className="pt-6 border-t border-white/20 mt-auto flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
+                <div className="pt-6 border-t border-white/20 mt-auto flex flex-col xl:flex-row gap-4 xl:items-center justify-between pointer-events-auto">
                     {!isRealizado && (
                         <span className="text-3xl font-bold text-white">
                             ${Number(taller.price).toLocaleString('es-CL')}
                         </span>
                     )}
                     <button 
-                        onClick={handleAction}
-                        disabled={isLleno}
+                        onClick={(e) => { e.stopPropagation(); handleAction(); }}
+                        disabled={isLleno && !isRealizado}
                         className={`px-8 py-3 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 flex-shrink-0 disabled:cursor-not-allowed ${isRealizado ? 'w-full bg-white/20 text-white hover:bg-white hover:text-[#2c231d] backdrop-blur-sm' : isLleno ? 'w-full xl:w-auto bg-gray-500 text-gray-200' : 'w-full xl:w-auto bg-[#EACCA4] text-[#2c231d] hover:bg-white'}`}
                     >
                         {isRealizado && <ImageIcon className="w-4 h-4"/>}

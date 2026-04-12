@@ -33,12 +33,34 @@ export default function AdminTalleresPage() {
     const [formData, setFormData] = useState({
         title: '',
         category: '',
-        description: '',
+        description: '', // Resumen Corto
+        full_description: '', // Descripción completa
         price: '',
         date_info: '',
         status: 'activo'
     });
+    const [tempDate, setTempDate] = useState({ day: '', start: '', end: '' });
     const [imageFile, setImageFile] = useState<File | null>(null);
+
+    // Auto-generador de date_info basado en el calendario
+    useEffect(() => {
+        if (tempDate.day && tempDate.start) {
+            const d = new Date(tempDate.day + "T12:00:00");
+            const dayName = d.toLocaleDateString('es-CL', { weekday: 'long' });
+            const dayNumber = d.getDate();
+            const monthName = d.toLocaleDateString('es-CL', { month: 'long' });
+            
+            const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+            let text = `${capitalize(dayName)} ${dayNumber} de ${capitalize(monthName)}, ${tempDate.start}`;
+            if (tempDate.end) text += ` - ${tempDate.end} hrs`;
+            else text += ` hrs`;
+            
+            setFormData(prev => ({ ...prev, date_info: text }));
+        }
+    }, [tempDate]);
+
+    // Helper para parsear la descripcion (backward compatibility) eliminado - se usó en el card
+
 
     const fetchTalleres = async () => {
         setLoading(true);
@@ -76,11 +98,16 @@ export default function AdminTalleresPage() {
         }
 
         const priceNum = parseInt(formData.price, 10) || 0;
+        
+        const combinedDescription = JSON.stringify({
+            short: formData.description,
+            full: formData.full_description || formData.description
+        });
 
         const { error } = await supabase.from('workshops').insert([{
             title: formData.title,
             category: formData.category,
-            description: formData.description,
+            description: combinedDescription,
             price: priceNum,
             date_info: formData.date_info,
             image_url: imageUrl,
@@ -91,7 +118,8 @@ export default function AdminTalleresPage() {
 
         if (!error) {
             alert('Taller creado con éxito');
-            setFormData({ title: '', category: '', description: '', price: '', date_info: '', status: 'activo' });
+            setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo' });
+            setTempDate({ day: '', start: '', end: '' });
             setImageFile(null);
             setIsFormOpen(false);
             fetchTalleres();
@@ -146,8 +174,25 @@ export default function AdminTalleresPage() {
                             <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Categoría</label>
                             <input required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} type="text" placeholder="Ej. Artístico" className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Fecha y Hora Público</label>
+                        <div className="flex flex-col gap-2 md:col-span-2">
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase text-center border-b border-[#EACCA4] pb-2 mt-2">Configurar Fecha (Calendario Inteligente)</label>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs text-[#6B5A4E]">Día</label>
+                                    <input type="date" value={tempDate.day} onChange={e => setTempDate({...tempDate, day: e.target.value})} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs text-[#6B5A4E]">Hora Inicio</label>
+                                    <input type="time" value={tempDate.start} onChange={e => setTempDate({...tempDate, start: e.target.value})} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs text-[#6B5A4E]">Hora Término (Opcional)</label>
+                                    <input type="time" value={tempDate.end} onChange={e => setTempDate({...tempDate, end: e.target.value})} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-2 md:col-span-2">
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Fecha Generada (Modificable)</label>
                             <input required value={formData.date_info} onChange={e => setFormData({...formData, date_info: e.target.value})} type="text" placeholder="Ej. Sábado 15, 10:00 - 13:00 hrs" className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
                         </div>
                         <div className="flex flex-col gap-2">
@@ -155,8 +200,12 @@ export default function AdminTalleresPage() {
                             <input required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} type="number" placeholder="Ej. 25000" className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
                         </div>
                         <div className="flex flex-col gap-2 md:col-span-2">
-                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Descripción Corta</label>
-                            <textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} placeholder="Aprende las técnicas manuales..." className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"></textarea>
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Descripción Corta (Para la Tarjeta)</label>
+                            <textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={2} placeholder="Resumen atrapante..." className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"></textarea>
+                        </div>
+                        <div className="flex flex-col gap-2 md:col-span-2">
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Descripción Total (Mostrada en el Pop-up)</label>
+                            <textarea value={formData.full_description} onChange={e => setFormData({...formData, full_description: e.target.value})} rows={5} placeholder="Detalles de lo que incluye, requerimientos, temario, etc..." className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"></textarea>
                         </div>
 
                         <div className="flex flex-col gap-2 md:col-span-2">
@@ -230,6 +279,14 @@ export default function AdminTalleresPage() {
 
 // Componente Tarjeta Taller Administrador
 function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatus }: { t: Taller, handleDelete: (id: string, title: string) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void }) {
+    
+    // Extractor del JSON si se usó la nueva forma
+    let summaryText = t.description;
+    try {
+        const parsed = JSON.parse(t.description);
+        if (parsed.short) summaryText = parsed.short;
+    } catch {}
+
     return (
         <div className="bg-white rounded-[2rem] shadow-sm border border-[#EACCA4]/30 flex flex-col items-start overflow-hidden hover:shadow-lg transition-all relative h-full">
             {/* Imagen Header */}
@@ -249,7 +306,7 @@ function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatu
                     {t.status === 'lleno' && <span className="bg-red-100 text-red-700 px-2 rounded-full border border-red-200">LLENO</span>}
                 </span>
                 <h3 className="text-xl font-bold text-[#4A3B32]">{t.title}</h3>
-                <p className="text-[#6B5A4E] text-sm leading-relaxed flex-1 line-clamp-3">{t.description}</p>
+                <p className="text-[#6B5A4E] text-sm leading-relaxed flex-1 line-clamp-3">{summaryText}</p>
                 
                 <div className="w-full bg-[#FAEDDF] px-4 py-3 rounded-xl flex items-center justify-between mt-auto">
                     <div className="text-sm font-semibold text-[#8B5E3C]">{t.date_info}</div>
