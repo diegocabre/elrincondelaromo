@@ -26,9 +26,8 @@ export async function submitContactAction(formData: FormData) {
 
   try {
     // 1. Enviar comprobante automático al CLIENTE (persona que consultó)
-    await resend.emails.send({
-      from: 'Rincón del Aromo <noreply@rincondelaromo.com>', // Solo si has verificado tu dominio en Resend. Si no tienes dominio verificado, Resend usa un dominio genérico como "onboarding@resend.dev" sólo para pruebas a la cuenta validada.
-      // IMPORTANTE: En el Plan "Free" sin verificar un dominio propio (DNS), Resend SÓLO enviará a la dirección donde te registraste en Resend.
+    const { error: clientError } = await resend.emails.send({
+      from: 'Rincón del Aromo <noreply@rincondelaromo.com>', // Requiere que rincondelaromo.com esté verificado en Resend
       to: email,
       subject: 'Hemos recibido tu mensaje - Rincón del Aromo',
       html: `
@@ -47,9 +46,14 @@ export async function submitContactAction(formData: FormData) {
       `,
     });
 
+    if (clientError) {
+      console.error("Error al enviar comprobante al cliente:", clientError);
+      // Fallback
+    }
+
     // 2. Enviar la alerta interna a la ADMINISTRADORA para que actúe
-    await resend.emails.send({
-      from: 'Notificaciones Web <noreply@rincondelaromo.com>', // Ideal reemplazar con el generico si no hay dominio verificado
+    const { error: adminError } = await resend.emails.send({
+      from: 'Notificaciones Web <noreply@rincondelaromo.com>', 
       to: ADMIN_EMAIL, 
       subject: `Nuevo Mensaje Web: ${subject} - de ${name}`,
       html: `
@@ -65,9 +69,15 @@ export async function submitContactAction(formData: FormData) {
       `,
     });
 
+    if (adminError) {
+      console.error("Error al enviar alerta a administradora:", adminError);
+      return { success: false, error: 'Hubo un inconveniente con nuestro servidor de correos (Error interno). Intenta más tarde.' };
+    }
+
     return { success: true, message: '¡Tu mensaje ha sido enviado exitosamente! Nos contactaremos pronto contigo.' };
   } catch (error) {
-    console.error("Error al enviar desde Resend:", error);
-    return { success: false, error: 'Hubo un inconveniente con nuestro servidor de correos. Intenta más tarde.' };
+    console.error("Error crítico al enviar desde Resend:", error);
+    return { success: false, error: 'Hubo un inconveniente crítico con nuestro servidor de correos. Intenta más tarde.' };
   }
 }
+
