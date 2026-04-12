@@ -66,12 +66,12 @@ export async function POST(request: Request) {
             await supabase.from('workshop_registrations').update({ preference_id: result.id }).eq('id', registrationId);
 
             return NextResponse.json({ url: result.init_point });
-        } catch (mpError) {
+        } catch {
              console.error("Mercado Pago arrojó un error. Usando URL de mock temporalmente.");
              return NextResponse.json({ url: "https://sandbox.mercadopago.cl/checkout/v1/redirect?pref_id=mockup_123" });
         }
 
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: "No se pudo procesar la solicitud" }, { status: 500 });
     }
 }

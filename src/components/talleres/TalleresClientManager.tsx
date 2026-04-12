@@ -31,6 +31,13 @@ interface WorkshopPhoto {
   image_url: string;
 }
 
+export interface PayerData {
+  name: string;
+  surname: string;
+  email: string;
+  phone: string;
+}
+
 export default function TalleresClientManager({ talleresData }: { talleresData: Taller[] }) {
   // Estados Galería y Detalles
   const [galleryModalId, setGalleryModalId] = useState<string | null>(null);
@@ -38,7 +45,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
   const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
   const [detailModal, setDetailModal] = useState<Taller | null>(null);
 
-  const handleCheckout = async (taller: Taller, payer: any) => {
+  const handleCheckout = async (taller: Taller, payer: PayerData) => {
     try {
         const response = await fetch('/api/checkout', {
             method: 'POST',
@@ -162,9 +169,9 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
   );
 }
 
-function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller, onClose: () => void, handleAction: (payer: any) => void }) {
+function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller, onClose: () => void, handleAction: (payer: PayerData) => void }) {
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({ name: '', surname: '', email: '', phone: '' });
+    const [formData, setFormData] = useState<PayerData>({ name: '', surname: '', email: '', phone: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     let fullText = taller.description;
