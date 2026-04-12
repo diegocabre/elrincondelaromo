@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, PlayCircle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
