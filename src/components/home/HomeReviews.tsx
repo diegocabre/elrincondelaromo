@@ -113,8 +113,8 @@ export default function HomeReviews() {
 
                 {/* Botón de Acción Google */}
                 <motion.div 
-                    initial={{ opacity: 0, mt: 20 }}
-                    whileInView={{ opacity: 1, mt: 40 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     className="mt-12"
                 >
