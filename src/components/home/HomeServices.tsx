@@ -61,26 +61,19 @@ export default function HomeServices() {
           </ul>
         </motion.div>
 
-        {/* Right Column - Video Placeholder */}
+        {/* Right Column - Video Player */}
         <motion.div
           variants={fadeUp}
-          className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-[#E8D1B5]/30 group cursor-pointer bg-black flex items-center justify-center"
+          className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-[#EACCA4]/50 group bg-black focus:outline-none"
         >
-          {/* Temporary Video Placeholder */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#4A3B32] to-[#2A221C] opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-
-          <div className="relative z-10 flex flex-col items-center">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 text-white/90 shadow-xl mb-4"
-            >
-              <PlayCircle size={48} strokeWidth={1.5} className="ml-2" />
-            </motion.div>
-            <span className="text-white/80 text-sm font-medium tracking-wide uppercase">
-              Ver Video
-            </span>
-          </div>
+          <video
+            src="/assets/video/video.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover transition-opacity duration-700 opacity-90 group-hover:opacity-100"
+          />
         </motion.div>
       </motion.div>
     </section>
