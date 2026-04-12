@@ -38,11 +38,22 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
   const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
   const [detailModal, setDetailModal] = useState<Taller | null>(null);
 
-  const handleCheckout = async (taller: Taller) => {
+  const handleCheckout = async (taller: Taller, payer: any) => {
     try {
-        alert(`Redirigiendo a Mercado Pago para comprar: ${taller.title} por $${taller.price}... \n(Requiere credenciales)`);
+        const response = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ item: taller, payer })
+        });
+        const data = await response.json();
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            alert('Error al inicializar el pago.');
+        }
     } catch (e) {
         console.error(e);
+        alert('Hubo un error de conexión.');
     }
   };
 
@@ -75,7 +86,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                 ) : (
                     <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
                     {activos.map(taller => (
-                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => handleCheckout(taller)} actionText={taller.status === 'lleno' ? 'Cupos Agotados' : 'Inscribirme'} isRealizado={false} isLleno={taller.status === 'lleno'} onClickDetails={() => setDetailModal(taller)} />
+                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => setDetailModal(taller)} actionText={taller.status === 'lleno' ? 'Cupos Agotados' : 'Inscribirme'} isRealizado={false} isLleno={taller.status === 'lleno'} onClickDetails={() => setDetailModal(taller)} />
                     ))}
                     </motion.div>
                 )}
@@ -141,9 +152,8 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                 <WorkshopDetailModal 
                     taller={detailModal} 
                     onClose={() => setDetailModal(null)} 
-                    handleAction={() => { 
-                        setDetailModal(null); 
-                        handleCheckout(detailModal); 
+                    handleAction={(payer) => { 
+                        handleCheckout(detailModal, payer); 
                     }} 
                 />
             )}
@@ -152,7 +162,11 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
   );
 }
 
-function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller, onClose: () => void, handleAction: () => void }) {
+function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller, onClose: () => void, handleAction: (payer: any) => void }) {
+    const [showForm, setShowForm] = useState(false);
+    const [formData, setFormData] = useState({ name: '', surname: '', email: '', phone: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     let fullText = taller.description;
     try {
         const parsed = JSON.parse(taller.description);
@@ -161,6 +175,13 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
 
     const isRealizado = taller.status === 'realizado';
     const isLleno = taller.status === 'lleno';
+
+    const onSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name || !formData.surname || !formData.email || !formData.phone) return;
+        setIsSubmitting(true);
+        handleAction(formData);
+    };
 
     return (
         <motion.div 
@@ -201,25 +222,68 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
                         {taller.date_info}
                     </div>
 
-                    <div className="mb-8 border-l-4 border-[#8B5E3C] pl-4">
-                        <p className="text-[#4A3B32] text-md whitespace-pre-wrap leading-relaxed">{fullText}</p>
-                    </div>
+                    {!showForm ? (
+                        <>
+                            <div className="mb-8 border-l-4 border-[#8B5E3C] pl-4">
+                                <p className="text-[#4A3B32] text-md whitespace-pre-wrap leading-relaxed">{fullText}</p>
+                            </div>
 
-                    <div className="flex flex-col md:flex-row items-center justify-between mt-auto border-t border-[#EACCA4]/30 pt-6 gap-4">
-                        <span className="text-3xl font-bold text-[#4A3B32]">
-                            ${Number(taller.price).toLocaleString('es-CL')}
-                        </span>
-                        
-                        {(isRealizado || isLleno) ? (
-                            <button onClick={onClose} className="px-8 py-4 bg-[#8B5E3C] text-white rounded-xl font-bold shadow-lg hover:bg-[#6D492E] w-full md:w-auto">
-                                CERRAR DATOS
-                            </button>
-                        ) : (
-                            <button onClick={handleAction} className="px-8 py-4 bg-[#D4A373] hover:bg-[#C28E5C] text-white rounded-xl font-bold shadow-lg w-full md:w-auto text-lg hover:-translate-y-1 transition-transform">
-                                INSCRIBIRME AHORA
-                            </button>
-                        )}
-                    </div>
+                            <div className="flex flex-col md:flex-row items-center justify-between mt-auto border-t border-[#EACCA4]/30 pt-6 gap-4">
+                                <span className="text-3xl font-bold text-[#4A3B32]">
+                                    ${Number(taller.price).toLocaleString('es-CL')}
+                                </span>
+                                
+                                {(isRealizado || isLleno) ? (
+                                    <button onClick={onClose} className="px-8 py-4 bg-[#8B5E3C] text-white rounded-xl font-bold shadow-lg hover:bg-[#6D492E] w-full md:w-auto">
+                                        CERRAR DATOS
+                                    </button>
+                                ) : (
+                                    <button onClick={() => setShowForm(true)} className="px-8 py-4 bg-[#D4A373] hover:bg-[#C28E5C] text-white rounded-xl font-bold shadow-lg w-full md:w-auto text-lg hover:-translate-y-1 transition-transform">
+                                        INSCRIBIRME AHORA
+                                    </button>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        <form onSubmit={onSubmit} className="w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <h3 className="text-xl font-bold text-[#4A3B32] mb-2 border-b border-[#EACCA4]/30 pb-2">Completa tus datos para el pago</h3>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-[#6B5A4E] mb-1">Taller Seleccionado</label>
+                                <input type="text" value={taller.title} disabled className="w-full p-3 rounded-lg border border-[#EACCA4]/50 bg-[#FAEDDF] text-[#4A3B32] font-semibold cursor-not-allowed" />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-[#6B5A4E] mb-1">Nombre</label>
+                                    <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-3 rounded-lg border border-[#EACCA4] bg-white text-[#4A3B32] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]" placeholder="Ej: Juan" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-[#6B5A4E] mb-1">Apellido</label>
+                                    <input type="text" required value={formData.surname} onChange={e => setFormData({...formData, surname: e.target.value})} className="w-full p-3 rounded-lg border border-[#EACCA4] bg-white text-[#4A3B32] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]" placeholder="Ej: Pérez" />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-[#6B5A4E] mb-1">Email</label>
+                                <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full p-3 rounded-lg border border-[#EACCA4] bg-white text-[#4A3B32] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]" placeholder="tu@email.com" />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-[#6B5A4E] mb-1">Teléfono</label>
+                                <input type="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full p-3 rounded-lg border border-[#EACCA4] bg-white text-[#4A3B32] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]" placeholder="+56912345678" />
+                            </div>
+
+                            <div className="flex flex-col md:flex-row items-center justify-between mt-6 pt-6 border-t border-[#EACCA4]/30 gap-4">
+                                <button type="button" onClick={() => setShowForm(false)} className="text-[#8B5E3C] hover:text-[#6D492E] font-medium w-full md:w-auto">
+                                    ← Volver
+                                </button>
+                                <button type="submit" disabled={isSubmitting} className="px-8 py-4 bg-[#212121] hover:bg-[#000000] text-white rounded-xl font-bold shadow-lg w-full md:w-auto text-lg disabled:opacity-70 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2">
+                                    {isSubmitting ? 'PROCESANDO...' : `PAGAR $${Number(taller.price).toLocaleString('es-CL')}`}
+                                </button>
+                            </div>
+                        </form>
+                    )}
                 </div>
             </motion.div>
         </motion.div>

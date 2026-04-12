@@ -37,7 +37,12 @@ export default function HomeHero() {
           donde la comunidad <br className="hidden md:block" /> florece.
         </h1>
         {/* Removed paragraph text underneath since it's not in the mockup */}
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-6">
+        <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 w-full sm:w-auto mt-6">
+          <Link href="/talleres">
+            <button className="w-full sm:w-auto px-8 py-4 bg-[#D4A373] text-white border border-[#D4A373] rounded-full font-medium hover:bg-[#C28E5C] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300">
+              Agendar Taller
+            </button>
+          </Link>
           <Link href="/contacto">
             <button className="w-full sm:w-auto px-8 py-4 bg-[#8B5E3C] text-white rounded-full font-medium hover:bg-[#6D492E] transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300">
               Contáctanos

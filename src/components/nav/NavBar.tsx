@@ -30,7 +30,7 @@ export const NavBar = () => {
         { href: '/about', label: 'Somos' },
         { href: '/cafeteria-cowork', label: 'Cafetería | Cowork' },
         { href: '/talleres', label: 'Talleres' },
-        { href: '/bienestar', label: 'Bienestar' },
+        { href: '/bienestar', label: 'Clases' },
         { href: '/contacto', label: 'Contacto' },
     ];
 
