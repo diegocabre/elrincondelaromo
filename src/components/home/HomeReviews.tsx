@@ -11,27 +11,33 @@ const GOOGLE_REVIEW_LINK = "https://g.page/r/CcnkvcURWo2mEAE/review";
 const REVIEWS = [
     {
         id: 1,
-        name: "María José Valenzuela",
+        name: "Maria Eugenia Arrieche Linares",
         rating: 5,
-        text: "Un lugar mágico. La cafetería tiene un ambiente increíble para ir a desconectarse y el cowork es súper tranquilo. La atención es de primera.",
+        text: "En un lindo barrio residencial de Osorno, encontramos esta cafetería en una casa, amables, educados, lindo ambiente, todo bien.",
     },
     {
         id: 2,
-        name: "Carlos Figueroa",
+        name: "Veronica Vasquez",
         rating: 5,
-        text: "Excelente servicio en todo sentido. Fui a una terapia de biomagnetismo y la diferencia fue abismal. Además, el café de especialidad que preparan es el mejor de Osorno.",
+        text: "Muy acogedor, personal altamente calificado, niños felices, disfrutando actividades enriquecedoras para su desarrollo. La cafetería variedades de cafés y muchas cositas ricas.!..no te lo pierdas.!!",
     },
     {
         id: 3,
-        name: "Camila Soto",
+        name: "Juan Pablo Morales",
         rating: 5,
-        text: "Tomé un taller de yoga el fin de semana y me encantó la energía del lugar. Definitivamente volveré. ¡Súper recomendado para encontrar la paz!",
+        text: "Llegué buscando un cowork tranquilo y encontré mi lugar favorito en Osorno. El internet es rápido y poder pedir un café de especialidad mientras trabajas no tiene precio.",
     },
     {
         id: 4,
-        name: "Daniela Riffo",
+        name: "Catalina Espinoza",
+        rating: 5,
+        text: "Tomé un taller de cerámica y me encantó la energía del lugar. El ambiente del Rincón del Aromo te invita a relajarte y desconectarte desde que cruzas la puerta.",
+    },
+    {
+        id: 5,
+        name: "Sebastián Rojas",
         rating: 4,
-        text: "Muy buen lugar, ambiente súper acogedor y la comida deliciosa. Me encantaría que extendieran el horario del sábado, pero todo excelente.",
+        text: "Excelente atención y un menú riquísimo para la tarde. Me fascina la propuesta que tienen combinando bienestar y cafetería en una misma casona. Completamente recomendado.",
     }
 ];
 
