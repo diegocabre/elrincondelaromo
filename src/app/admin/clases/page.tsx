@@ -19,7 +19,7 @@ export default function AdminClasesPage() {
     const [instTitle, setInstTitle] = useState('');
 
     const [schPeriod, setSchPeriod] = useState('MAÑANA');
-    const [schDay, setSchDay] = useState('');
+    const [schDays, setSchDays] = useState<string[]>([]);
     const [schClass, setSchClass] = useState('');
     const [schTime, setSchTime] = useState('');
 
@@ -61,8 +61,23 @@ export default function AdminClasesPage() {
 
     const handleAddSch = async (e: React.FormEvent) => {
         e.preventDefault();
-        const { error } = await supabase.from('general_schedules').insert([{ period: schPeriod, day_names: schDay, class_name: schClass, time: schTime }]);
-        if (!error) { setSchDay(''); setSchClass(''); setSchTime(''); fetchData(); }
+        if (schDays.length === 0) {
+            alert('Debes seleccionar al menos un día.');
+            return;
+        }
+        
+        // Format the days properly: "Lun y Mié" or "Lun, Mar y Mié"
+        let formattedDays = '';
+        if (schDays.length === 1) {
+            formattedDays = schDays[0];
+        } else if (schDays.length === 2) {
+            formattedDays = schDays.join(' y ');
+        } else {
+            formattedDays = schDays.slice(0, -1).join(', ') + ' y ' + schDays[schDays.length - 1];
+        }
+
+        const { error } = await supabase.from('general_schedules').insert([{ period: schPeriod, day_names: formattedDays, class_name: schClass, time: schTime }]);
+        if (!error) { setSchDays([]); setSchClass(''); setSchTime(''); fetchData(); }
         else alert('Error: ' + error.message);
     };
     const handleDeleteSch = async (id: string) => {
@@ -112,15 +127,32 @@ export default function AdminClasesPage() {
             {/* SECCIÓN HORARIOS */}
             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-[#EACCA4]/30">
                 <h2 className="text-xl font-bold text-[#4A3B32] mb-4 flex items-center gap-2"><Clock className="text-[#8B5E3C]"/> Horarios Generales</h2>
-                <form onSubmit={handleAddSch} className="flex flex-col md:flex-row gap-4 mb-6">
-                    <select value={schPeriod} onChange={e=>setSchPeriod(e.target.value)} className="p-3 rounded-lg border border-[#EACCA4]">
-                        <option value="MAÑANA">Mañana</option>
-                        <option value="TARDE">Tarde</option>
-                    </select>
-                    <input required placeholder="Días (Ej: Lun y Mié)" value={schDay} onChange={e=>setSchDay(e.target.value)} className="p-3 rounded-lg border border-[#EACCA4]" />
-                    <input required placeholder="Clase (Ej: Yoga Wale)" value={schClass} onChange={e=>setSchClass(e.target.value)} className="flex-1 p-3 rounded-lg border border-[#EACCA4]" />
-                    <input required placeholder="Hora (Ej: 09:00)" value={schTime} onChange={e=>setSchTime(e.target.value)} className="w-24 p-3 rounded-lg border border-[#EACCA4]" />
-                    <button type="submit" className="bg-[#8B5E3C] text-white px-6 py-3 rounded-lg flex items-center gap-2"><PlusCircle size={18}/> Agregar</button>
+                <form onSubmit={handleAddSch} className="flex flex-col gap-4 mb-6">
+                    <div className="flex flex-col md:flex-row gap-4 items-center">
+                        <select value={schPeriod} onChange={e=>setSchPeriod(e.target.value)} className="p-3 rounded-lg border border-[#EACCA4] w-full md:w-auto">
+                            <option value="MAÑANA">Mañana</option>
+                            <option value="TARDE">Tarde</option>
+                        </select>
+                        <div className="flex flex-wrap gap-3 items-center border border-[#EACCA4] p-3 rounded-lg bg-[#FDFCF8] flex-1">
+                            <span className="text-sm text-[#8B5E3C] font-semibold mr-2">Días:</span>
+                            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
+                                <label key={d} className="flex items-center gap-1.5 text-sm font-medium text-[#4A3B32] cursor-pointer hover:text-[#8B5E3C]">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={schDays.includes(d)} 
+                                        onChange={() => setSchDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d])}
+                                        className="w-4 h-4 accent-[#8B5E3C] cursor-pointer" 
+                                    />
+                                    {d}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <input required placeholder="Clase (Ej: Yoga Wale)" value={schClass} onChange={e=>setSchClass(e.target.value)} className="flex-1 p-3 rounded-lg border border-[#EACCA4]" />
+                        <input required placeholder="Hora (Ej: 09:00)" value={schTime} onChange={e=>setSchTime(e.target.value)} className="w-full md:w-32 p-3 rounded-lg border border-[#EACCA4]" />
+                        <button type="submit" className="bg-[#8B5E3C] text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2 w-full md:w-auto"><PlusCircle size={18}/> Agregar</button>
+                    </div>
                 </form>
                 <div className="grid md:grid-cols-2 gap-4">
                     {schedules.map(s => (
