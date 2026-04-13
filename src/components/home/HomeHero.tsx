@@ -30,9 +30,9 @@ export default function HomeHero() {
         <span className="text-[#E8D1B5] font-medium tracking-[0.2em] uppercase text-sm mb-4">
           Un refugio en la ciudad
         </span>
-        <h1 
+        <h1
           className="text-6xl md:text-8xl text-white drop-shadow-md mb-6 leading-tight"
-          style={{ fontFamily: 'var(--font-dancing)' }}
+          style={{ fontFamily: "var(--font-dancing)" }}
         >
           donde la comunidad <br className="hidden md:block" /> florece.
         </h1>
@@ -40,7 +40,7 @@ export default function HomeHero() {
         <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 w-full sm:w-auto mt-6">
           <Link href="/talleres">
             <button className="w-full sm:w-auto px-8 py-4 bg-[#D4A373] text-white border border-[#D4A373] rounded-full font-medium hover:bg-[#C28E5C] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-300">
-              Agendar Taller
+              Agenda tu Taller
             </button>
           </Link>
           <Link href="/contacto">

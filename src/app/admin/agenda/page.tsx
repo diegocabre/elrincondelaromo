@@ -29,6 +29,7 @@ export default function AdminAgendaPage() {
     const [availableSlots, setAvailableSlots] = useState<AvailableHour[]>([]);
     const [therapies, setTherapies] = useState<Therapy[]>([]);
     const [loading, setLoading] = useState(true);
+    const [bookingsFilter, setBookingsFilter] = useState('');
 
     const [openDate, setOpenDate] = useState('');
     const [openTime, setOpenTime] = useState('');
@@ -379,9 +380,21 @@ export default function AdminAgendaPage() {
                     {bookings.length === 0 ? (
                         <p className="text-sm text-[#6B5A4E]">No hay reservas agendadas.</p>
                     ) : (
-                        <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2">
-                            {bookings.map(b => (
-                                <div key={b.id} className="p-5 rounded-2xl bg-[#FDFCF8] border border-[#EACCA4]/50 shadow-sm flex flex-col gap-2 relative group mt-4">
+                        <div className="flex flex-col gap-4">
+                            <input 
+                                type="text"
+                                placeholder="Buscar por cliente, terapia o email..."
+                                value={bookingsFilter}
+                                onChange={(e) => setBookingsFilter(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] mb-2"
+                            />
+                            <div className="flex flex-col gap-4 max-h-[350px] overflow-y-auto pr-2">
+                                {bookings.filter(b => 
+                                    b.name.toLowerCase().includes(bookingsFilter.toLowerCase()) || 
+                                    b.service.toLowerCase().includes(bookingsFilter.toLowerCase()) || 
+                                    b.email.toLowerCase().includes(bookingsFilter.toLowerCase())
+                                ).map(b => (
+                                    <div key={b.id} className="p-5 rounded-2xl bg-[#FDFCF8] border border-[#EACCA4]/50 shadow-sm flex flex-col gap-2 relative group mt-4">
                                     <button 
                                         onClick={() => handleDeleteBooking(b.id)} 
                                         className="absolute -top-3 -right-2 px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-lg border border-red-200 opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-red-600 hover:text-white"

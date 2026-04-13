@@ -15,7 +15,36 @@ interface Therapy {
     description: string;
 }
 
-export default function BienestarInfo({ therapies }: { therapies: Therapy[] }) {
+interface Instructor {
+    id: string;
+    name: string;
+    title: string;
+}
+
+interface Schedule {
+    id: string;
+    period: string;
+    day_names: string;
+    class_name: string;
+    time: string;
+}
+
+interface Price {
+    id: string;
+    category: string;
+    description: string;
+    price: string;
+    category_group: string;
+}
+
+interface BienestarInfoProps {
+    therapies: Therapy[];
+    instructors?: Instructor[];
+    schedules?: Schedule[];
+    prices?: Price[];
+}
+
+export default function BienestarInfo({ therapies, instructors = [], schedules = [], prices = [] }: BienestarInfoProps) {
     return (
         <motion.div initial="hidden" animate="visible" variants={fadeUp} className="w-full flex flex-col pb-10">
             <span className="text-[#8B5E3C] font-semibold tracking-widest uppercase text-sm mb-4 block">Salud & Mente</span>
@@ -40,10 +69,15 @@ export default function BienestarInfo({ therapies }: { therapies: Therapy[] }) {
                         <div className="absolute top-0 right-0 w-16 h-16 bg-[#FAEDDF] rounded-bl-full -z-0 opacity-50" />
                         <h3 className="text-[#8B5E3C] font-bold text-lg mb-4 uppercase tracking-wide flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#8B5E3C]"></span> MAÑANA</h3>
                         <ul className="space-y-3 text-sm text-[#6B5A4E]">
-                            <li className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2"><span className="font-medium">Lun y Mié</span> <span>Yoga (Cami) <span className="font-bold text-[#4A3B32]">08:10</span></span></li>
-                            <li className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2"><span className="font-medium">Martes</span> <span>Yoga (Wale) <span className="font-bold text-[#4A3B32]">09:00</span></span></li>
-                            <li className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2"><span className="font-medium">Lun y Vie</span> <span>Pilates (Caro) <span className="font-bold text-[#4A3B32]">11:15</span></span></li>
-                            <li className="flex justify-between pb-1"><span className="font-medium">Sábado</span> <span>Zumba (Caro) <span className="font-bold text-[#4A3B32]">10:00</span></span></li>
+                            {schedules.filter(s => s.period.toUpperCase() === 'MAÑANA').map(s => (
+                                <li key={s.id} className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2">
+                                    <span className="font-medium">{s.day_names}</span> 
+                                    <span>{s.class_name} <span className="font-bold text-[#4A3B32]">{s.time}</span></span>
+                                </li>
+                            ))}
+                            {schedules.filter(s => s.period.toUpperCase() === 'MAÑANA').length === 0 && (
+                                <li className="text-gray-400">Sin clases matutinas asignadas</li>
+                            )}
                         </ul>
                     </div>
 
@@ -51,11 +85,15 @@ export default function BienestarInfo({ therapies }: { therapies: Therapy[] }) {
                         <div className="absolute top-0 right-0 w-16 h-16 bg-[#FAEDDF] rounded-bl-full -z-0 opacity-50" />
                         <h3 className="text-[#8B5E3C] font-bold text-lg mb-4 uppercase tracking-wide flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#8B5E3C]"></span> TARDE</h3>
                         <ul className="space-y-3 text-sm text-[#6B5A4E]">
-                            <li className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2"><span className="font-medium">Mar y Jue</span> <span>Inglés <span className="font-bold text-[#4A3B32]">15:00 / 16:00 / 17:00</span></span></li>
-                            <li className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2"><span className="font-medium">Mar y Jue</span> <span>Pilates (Caro) <span className="font-bold text-[#4A3B32]">18:15</span></span></li>
-                            <li className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2"><span className="font-medium">Lunes</span> <span>Yoga (Cami) <span className="font-bold text-[#4A3B32]">19:00</span></span></li>
-                            <li className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2"><span className="font-medium">Miércoles</span> <span>Yoga (Wale) <span className="font-bold text-[#4A3B32]">19:00</span></span></li>
-                            <li className="flex justify-between pb-1"><span className="font-medium">Jueves</span> <span>Yoga (Cami) <span className="font-bold text-[#4A3B32]">19:30</span></span></li>
+                            {schedules.filter(s => s.period.toUpperCase() === 'TARDE').map(s => (
+                                <li key={s.id} className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2">
+                                    <span className="font-medium">{s.day_names}</span> 
+                                    <span>{s.class_name} <span className="font-bold text-[#4A3B32]">{s.time}</span></span>
+                                </li>
+                            ))}
+                            {schedules.filter(s => s.period.toUpperCase() === 'TARDE').length === 0 && (
+                                <li className="text-gray-400">Sin clases vespertinas asignadas</li>
+                            )}
                         </ul>
                     </div>
                 </div>
@@ -68,64 +106,23 @@ export default function BienestarInfo({ therapies }: { therapies: Therapy[] }) {
                 </h2>
                 
                 <div className="grid sm:grid-cols-2 gap-4">
-                    {/* Yoga Plan */}
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
-                        <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">🧘‍♀️ Yoga (Vinyasa / Kundalini)</h4>
-                        <ul className="text-sm text-[#6B5A4E] space-y-2 mb-3">
-                            <li className="flex justify-between"><span>4 clases</span><span className="font-bold">$40.000</span></li>
-                            <li className="flex justify-between"><span>5 clases</span><span className="font-bold">$50.000</span></li>
-                            <li className="flex justify-between"><span>8 clases</span><span className="font-bold">$60.000</span></li>
-                            <li className="flex justify-between"><span>12 clases</span><span className="font-bold">$70.000</span></li>
-                        </ul>
-                        <div className="pt-2 border-t border-dashed border-[#EACCA4]/50 flex justify-between text-xs font-semibold text-[#8B5E3C]">
-                            <span>Clase de prueba</span><span>$12.000</span>
-                        </div>
-                    </div>
-
-                    {/* Pilates & Zumba */}
-                    <div className="flex flex-col gap-4">
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
-                            <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">🤸‍♀️ Pilates</h4>
-                            <ul className="text-sm text-[#6B5A4E] space-y-2 mb-2">
-                                <li className="flex justify-between"><span>4 clases</span><span className="font-bold">$30.000</span></li>
-                                <li className="flex justify-between"><span>8 clases</span><span className="font-bold">$50.000</span></li>
-                            </ul>
-                            <div className="pt-2 flex justify-between text-xs font-semibold text-[#8B5E3C]">
-                                <span>Clase individual</span><span>$8.000</span>
+                    {prices.length > 0 ? (
+                        Array.from(new Set(prices.map(p => p.category))).map(cat => (
+                            <div key={cat} className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
+                                <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">{cat}</h4>
+                                <ul className="text-sm text-[#6B5A4E] space-y-2 mb-3">
+                                    {prices.filter(p => p.category === cat).map(p => (
+                                        <li key={p.id} className="flex justify-between">
+                                            <span>{p.description}</span>
+                                            <span className="font-bold">{p.price}</span>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                        </div>
-
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
-                            <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">💃 Zumba</h4>
-                            <ul className="text-sm text-[#6B5A4E] space-y-2 mb-2">
-                                <li className="flex justify-between"><span>4 clases</span><span className="font-bold">$20.000</span></li>
-                            </ul>
-                            <div className="pt-2 flex justify-between text-xs font-semibold text-[#8B5E3C]">
-                                <span>Clase individual</span><span>$8.000</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Kundalini & English */}
-                    <div className="flex flex-col gap-4 sm:col-span-2 md:grid md:grid-cols-2">
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
-                            <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">🌿 Kundalini Yoga</h4>
-                            <ul className="text-sm text-[#6B5A4E] space-y-2 mb-2">
-                                <li className="flex justify-between"><span>4 clases</span><span className="font-bold">$40.000</span></li>
-                            </ul>
-                            <div className="pt-2 flex justify-between text-xs font-semibold text-[#8B5E3C]">
-                                <span>Clase individual</span><span>$10.000</span>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
-                            <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">🇬🇧 Clases de Inglés (GB)</h4>
-                            <ul className="text-sm text-[#6B5A4E] space-y-2">
-                                <li className="flex justify-between"><span>4 clases</span><span className="font-bold">$65.000</span></li>
-                                <li className="flex justify-between"><span>8 clases</span><span className="font-bold">$110.000</span></li>
-                            </ul>
-                        </div>
-                    </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-400 p-4">No hay precios configurados actualmente.</p>
+                    )}
                 </div>
             </div>
 
@@ -136,20 +133,19 @@ export default function BienestarInfo({ therapies }: { therapies: Therapy[] }) {
                 </h2>
                 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
-                        { name: "Carito Calderon", title: "Pilates y Zumba" },
-                        { name: "Camila", title: "Vinyasa Yoga" },
-                        { name: "Waleska", title: "Kundalini Yoga" },
-                        { name: "Tania", title: "Inglés" },
-                    ].map((inst, idx) => (
-                        <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-[#EACCA4]/20 flex flex-col items-center text-center group hover:shadow-md transition-all">
-                            <div className="w-16 h-16 bg-[#FAEDDF] rounded-full flex items-center justify-center mb-3 text-[#8B5E3C] group-hover:scale-110 transition-transform">
-                                <UserCircle2 size={40} strokeWidth={1.5} />
+                    {instructors.length > 0 ? (
+                        instructors.map((inst, idx) => (
+                            <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-[#EACCA4]/20 flex flex-col items-center text-center group hover:shadow-md transition-all">
+                                <div className="w-16 h-16 bg-[#FAEDDF] rounded-full flex items-center justify-center mb-3 text-[#8B5E3C] group-hover:scale-110 transition-transform">
+                                    <UserCircle2 size={40} strokeWidth={1.5} />
+                                </div>
+                                <h4 className="font-bold text-[#4A3B32] text-sm">{inst.name}</h4>
+                                <p className="text-xs text-[#8B5E3C] mt-1">{inst.title}</p>
                             </div>
-                            <h4 className="font-bold text-[#4A3B32] text-sm">{inst.name}</h4>
-                            <p className="text-xs text-[#8B5E3C] mt-1">{inst.title}</p>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <p className="text-gray-400 p-4 col-span-full">No hay instructores registrados actualmente.</p>
+                    )}
                 </div>
             </div>
 

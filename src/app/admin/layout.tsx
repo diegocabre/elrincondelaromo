@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Calendar, BookOpen, UserCircle2 } from 'lucide-react';
+import { LogOut, Calendar, BookOpen, UserCircle2, Settings } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -41,6 +41,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     >
                         <Calendar className="w-5 h-5" /> Agenda Bienestar
                     </Link>
+
+                    <Link
+                        href="/admin/clases"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                            pathname.includes('/admin/clases') 
+                                ? 'bg-[#8B5E3C] text-white shadow-md' 
+                                : 'text-[#6B5A4E] hover:bg-[#FAEDDF] hover:text-[#8B5E3C]'
+                        }`}
+                    >
+                        <Settings className="w-5 h-5" /> Config. Clases
+                    </Link>
                     
                     <Link
                         href="/admin/talleres"
@@ -70,6 +81,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="flex items-center gap-4">
                      <Link href="/admin/agenda" className={`p-2 rounded-lg ${pathname.includes('/admin/agenda') ? 'bg-[#FAEDDF] text-[#8B5E3C]' : 'text-[#6B5A4E]'}`}>
                         <Calendar className="w-5 h-5" />
+                    </Link>
+                    <Link href="/admin/clases" className={`p-2 rounded-lg ${pathname.includes('/admin/clases') ? 'bg-[#FAEDDF] text-[#8B5E3C]' : 'text-[#6B5A4E]'}`}>
+                        <Settings className="w-5 h-5" />
                     </Link>
                     <Link href="/admin/talleres" className={`p-2 rounded-lg ${pathname.includes('/admin/talleres') ? 'bg-[#FAEDDF] text-[#8B5E3C]' : 'text-[#6B5A4E]'}`}>
                         <BookOpen className="w-5 h-5" />
