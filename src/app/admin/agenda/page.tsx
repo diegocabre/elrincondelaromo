@@ -408,8 +408,9 @@ export default function AdminAgendaPage() {
                                     </div>
                                     <h3 className="font-bold text-[#4A3B32] text-lg mt-2">{b.name}</h3>
                                     <p className="text-sm text-[#6B5A4E] truncate max-w-full">{b.email}</p>
-                                </div>
-                            ))}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
