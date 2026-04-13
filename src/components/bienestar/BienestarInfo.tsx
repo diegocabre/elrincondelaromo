@@ -45,6 +45,14 @@ interface BienestarInfoProps {
     prices?: Price[];
 }
 
+const formatPrice = (priceStr: string) => {
+    const num = parseInt(priceStr.replace(/\D/g, ''), 10);
+    if (!isNaN(num)) {
+        return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(num);
+    }
+    return priceStr;
+};
+
 export default function BienestarInfo({ therapies, instructors = [], schedules = [], prices = [] }: BienestarInfoProps) {
     return (
         <motion.div initial="hidden" animate="visible" variants={fadeUp} className="w-full flex flex-col pb-10">
@@ -115,7 +123,7 @@ export default function BienestarInfo({ therapies, instructors = [], schedules =
                                     {prices.filter(p => p.category === cat).map(p => (
                                         <li key={p.id} className="flex justify-between">
                                             <span>{p.description}</span>
-                                            <span className="font-bold">{p.price}</span>
+                                            <span className="font-bold">{formatPrice(p.price)}</span>
                                         </li>
                                     ))}
                                 </ul>

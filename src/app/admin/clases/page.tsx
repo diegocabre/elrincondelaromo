@@ -46,6 +46,14 @@ export default function AdminClasesPage() {
   const [priceVal, setPriceVal] = useState("");
   const [priceGroup, setPriceGroup] = useState("");
 
+  const formatPrice = (priceStr: string) => {
+    const num = parseInt(priceStr.replace(/\D/g, ''), 10);
+    if (!isNaN(num)) {
+        return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(num);
+    }
+    return priceStr;
+  };
+
   const fetchData = async () => {
     setLoading(true);
     const resInst = await supabase
@@ -404,7 +412,7 @@ export default function AdminClasesPage() {
             >
               <div>
                 <b className="text-[#8B5E3C]">{p.category}</b> | {p.description}{" "}
-                <b className="ml-2">${p.price}</b>{" "}
+                <b className="ml-2">{formatPrice(p.price)}</b>{" "}
                 <span className="text-xs text-gray-400">
                   [{p.category_group}]
                 </span>
