@@ -36,6 +36,7 @@ interface Price {
     description: string;
     price: string;
     category_group: string;
+    instructor_id?: string;
 }
 
 interface BienestarInfoProps {
@@ -115,22 +116,55 @@ export default function BienestarInfo({ therapies, instructors = [], schedules =
                 </h2>
                 
                 <div className="grid sm:grid-cols-2 gap-4">
-                    {prices.length > 0 ? (
-                        Array.from(new Set(prices.map(p => p.category))).map(cat => (
-                            <div key={cat} className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
-                                <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">{cat}</h4>
-                                <ul className="text-sm text-[#6B5A4E] space-y-2 mb-3">
-                                    {prices.filter(p => p.category === cat).map(p => (
-                                        <li key={p.id} className="flex justify-between">
-                                            <span>{p.description}</span>
-                                            <span className="font-bold">{formatPrice(p.price)}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                    {instructors.filter(inst => prices.some(p => p.instructor_id === inst.id)).length > 0 ? (
+                        instructors.filter(inst => prices.some(p => p.instructor_id === inst.id)).map(inst => (
+                            <div key={inst.id} className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
+                                <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2 flex items-center gap-2">
+                                    {inst.image_data ? (
+                                        <img src={inst.image_data} alt={inst.name} className="w-8 h-8 rounded-full object-cover border border-[#EACCA4] shadow-sm shrink-0" />
+                                    ) : (
+                                        <div className="w-8 h-8 bg-[#FAEDDF] rounded-full flex items-center justify-center text-[#8B5E3C] shrink-0">
+                                            <UserCircle2 size={20} strokeWidth={1.5} />
+                                        </div>
+                                    )}
+                                    <div className="leading-tight">
+                                        <span className="block">{inst.name}</span>
+                                        <span className="text-xs text-[#8B5E3C] font-normal">{inst.title}</span>
+                                    </div>
+                                </h4>
+                                {Array.from(new Set(prices.filter(p => p.instructor_id === inst.id).map(p => p.category))).map(cat => (
+                                    <div key={cat} className="mb-4 last:mb-0">
+                                        <h5 className="font-bold text-[#6B5A4E] text-sm mb-2">{cat}</h5>
+                                        <ul className="text-sm text-[#6B5A4E] space-y-2">
+                                            {prices.filter(p => p.instructor_id === inst.id && p.category === cat).map(p => (
+                                                <li key={p.id} className="flex justify-between">
+                                                    <span>{p.description}</span>
+                                                    <span className="font-bold">{formatPrice(p.price)}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
                             </div>
                         ))
                     ) : (
-                        <p className="text-gray-400 p-4">No hay precios configurados actualmente.</p>
+                        prices.length > 0 ? (
+                            Array.from(new Set(prices.map(p => p.category))).map(cat => (
+                                <div key={cat} className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
+                                    <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">{cat}</h4>
+                                    <ul className="text-sm text-[#6B5A4E] space-y-2 mb-3">
+                                        {prices.filter(p => p.category === cat).map(p => (
+                                            <li key={p.id} className="flex justify-between">
+                                                <span>{p.description}</span>
+                                                <span className="font-bold">{formatPrice(p.price)}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-400 p-4">No hay precios configurados actualmente.</p>
+                        )
                     )}
                 </div>
             </div>
