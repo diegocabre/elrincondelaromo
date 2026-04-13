@@ -222,6 +222,22 @@ export default function AdminAgendaPage() {
         if (!error) fetchData();
     };
 
+    const handleDeleteAllSlots = async () => {
+        if (!confirm('¡ADVERTENCIA CRÍTICA! ¿Estás absolutamente seguro de querer CERRAR Y ELIMINAR TODOS los cupos habilitados actualmente visibles? Esta acción vaciará por completo la lista blanca.')) return;
+        
+        setIsGenerating(true); // Reusamos el estado de carga
+        const ids = availableSlots.map(s => s.id);
+        
+        // Eliminamos en lotes de 500 por seguridad en la API
+        for (let i = 0; i < ids.length; i += 500) {
+            const chunk = ids.slice(i, i + 500);
+            await supabase.from('available_hours').delete().in('id', chunk);
+        }
+        
+        fetchData();
+        setIsGenerating(false);
+    };
+
     const formatDateTime = (iso: string) => {
         const d = new Date(iso);
         return d.toLocaleString('es-CL', { dateStyle: 'long', timeStyle: 'short' });
@@ -337,9 +353,19 @@ export default function AdminAgendaPage() {
             <div className="grid lg:grid-cols-2 gap-8">
                 {/* Visualizador de Horas Habilitadas */}
                 <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-[#EACCA4]/30">
-                    <h2 className="text-xl font-bold text-[#4A3B32] mb-6 flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-[#8B5E3C]"/> Cupos Habilitados (Lista Blanca)
-                    </h2>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-[#4A3B32] flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-[#8B5E3C]"/> Cupos Habilitados (Lista Blanca)
+                        </h2>
+                        {availableSlots.length > 0 && (
+                            <button 
+                                onClick={handleDeleteAllSlots}
+                                className="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-bold rounded-lg hover:bg-red-600 hover:text-white transition-colors"
+                            >
+                                Borrar TODO
+                            </button>
+                        )}
+                    </div>
                     {availableSlots.length === 0 ? (
                         <p className="text-sm text-[#6B5A4E]">No hay cupos abiertos actualmente.</p>
                     ) : (
