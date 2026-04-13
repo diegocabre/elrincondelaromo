@@ -8,6 +8,7 @@ interface Instructor {
   id: string;
   name: string;
   title: string;
+  image_data?: string;
 }
 interface Schedule {
   id: string;
@@ -33,6 +34,7 @@ export default function AdminClasesPage() {
   // Form states
   const [instName, setInstName] = useState("");
   const [instTitle, setInstTitle] = useState("");
+  const [instImage, setInstImage] = useState<string | null>(null);
 
   const [schPeriod, setSchPeriod] = useState("MAÑANA");
   const [schDays, setSchDays] = useState<string[]>([]);
@@ -72,16 +74,45 @@ export default function AdminClasesPage() {
   }, []);
 
   // Handlers
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if(!ctx) return;
+        const size = 150; // Resize to 150x150 max to save database space
+        canvas.width = size;
+        canvas.height = size;
+        
+        // draw scaling taking the center (cover)
+        const scale = Math.max(size / img.width, size / img.height);
+        const x = (size / scale - img.width) / 2;
+        const y = (size / scale - img.height) / 2;
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, x, y);
+        
+        setInstImage(canvas.toDataURL("image/jpeg", 0.7)); // 0.7 quality saves bytes
+      };
+      img.src = ev.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAddInst = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase
       .from("instructors")
-      .insert([{ name: instName, title: instTitle }]);
+      .insert([{ name: instName, title: instTitle, image_data: instImage }]);
     if (!error) {
       setInstName("");
       setInstTitle("");
+      setInstImage(null);
       fetchData();
-    } else alert("Error: " + error.message);
+    } else alert("Error al subir: Puede que falte crear la columna image_data en Supabase.");
   };
   const handleDeleteInst = async (id: string) => {
     if (!confirm("¿Seguro quieres borrar este instructor?")) return;
@@ -180,8 +211,16 @@ export default function AdminClasesPage() {
         </h2>
         <form
           onSubmit={handleAddInst}
-          className="flex flex-col md:flex-row gap-4 mb-6"
+          className="flex flex-col md:flex-row gap-4 mb-6 items-center"
         >
+          <label className="flex flex-col items-center justify-center w-12 h-12 rounded-full border border-dashed border-[#EACCA4] overflow-hidden bg-[#FAEDDF] cursor-pointer shrink-0 hover:border-[#8B5E3C] transition-colors">
+            {instImage ? (
+                <img src={instImage} alt="InstImage" className="w-full h-full object-cover" />
+            ) : (
+                <span className="text-[#8B5E3C] text-[10px] text-center font-bold px-1">FOTO</span>
+            )}
+            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+          </label>
           <input
             required
             placeholder="Nombre (Ej: Sofía)"
@@ -198,7 +237,7 @@ export default function AdminClasesPage() {
           />
           <button
             type="submit"
-            className="bg-[#8B5E3C] text-white px-6 py-3 rounded-lg flex items-center gap-2"
+            className="bg-[#8B5E3C] text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2"
           >
             <PlusCircle size={18} /> Agregar
           </button>
@@ -207,7 +246,7 @@ export default function AdminClasesPage() {
           {instructors.map((i) => (
             <div
               key={i.id}
-              className="p-4 bg-[#FDFCF8] rounded-xl border relative group"
+              className="p-4 bg-[#FDFCF8] rounded-xl border relative group flex flex-col items-center text-center"
             >
               <button
                 onClick={() => handleDeleteInst(i.id)}
@@ -215,6 +254,13 @@ export default function AdminClasesPage() {
               >
                 <X size={16} />
               </button>
+              {i.image_data ? (
+                 <img src={i.image_data} alt={i.name} className="w-12 h-12 rounded-full object-cover mb-2 border border-[#EACCA4]" />
+              ) : (
+                 <div className="w-12 h-12 rounded-full border border-[#EACCA4] mb-2 flex items-center justify-center bg-[#FAEDDF] text-[#8B5E3C]">
+                   <Users size={20} />
+                 </div>
+              )}
               <p className="font-bold">{i.name}</p>
               <p className="text-sm text-[#8B5E3C]">{i.title}</p>
             </div>

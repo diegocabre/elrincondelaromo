@@ -19,6 +19,7 @@ interface Instructor {
     id: string;
     name: string;
     title: string;
+    image_data?: string;
 }
 
 interface Schedule {
@@ -136,9 +137,13 @@ export default function BienestarInfo({ therapies, instructors = [], schedules =
                     {instructors.length > 0 ? (
                         instructors.map((inst, idx) => (
                             <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-[#EACCA4]/20 flex flex-col items-center text-center group hover:shadow-md transition-all">
-                                <div className="w-16 h-16 bg-[#FAEDDF] rounded-full flex items-center justify-center mb-3 text-[#8B5E3C] group-hover:scale-110 transition-transform">
-                                    <UserCircle2 size={40} strokeWidth={1.5} />
-                                </div>
+                                {inst.image_data ? (
+                                    <img src={inst.image_data} alt={inst.name} className="w-16 h-16 rounded-full object-cover mb-3 border border-[#EACCA4] group-hover:scale-110 transition-transform shadow-sm" />
+                                ) : (
+                                    <div className="w-16 h-16 bg-[#FAEDDF] rounded-full flex items-center justify-center mb-3 text-[#8B5E3C] group-hover:scale-110 transition-transform">
+                                        <UserCircle2 size={40} strokeWidth={1.5} />
+                                    </div>
+                                )}
                                 <h4 className="font-bold text-[#4A3B32] text-sm">{inst.name}</h4>
                                 <p className="text-xs text-[#8B5E3C] mt-1">{inst.title}</p>
                             </div>
