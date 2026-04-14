@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 export default function AdminLoginPage() {
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -19,7 +20,7 @@ export default function AdminLoginPage() {
             const res = await fetch('/api/admin/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
+                body: JSON.stringify({ email, password })
             });
             const data = await res.json();
 
@@ -61,7 +62,18 @@ export default function AdminLoginPage() {
 
                 <form onSubmit={handleLogin} className="w-full flex flex-col gap-5">
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Clave Maestra</label>
+                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Correo Electrónico</label>
+                        <input
+                            type="email"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="contacto@rincondelaromo.com"
+                            className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32] text-center"
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Contraseña</label>
                         <input
                             type="password"
                             required
