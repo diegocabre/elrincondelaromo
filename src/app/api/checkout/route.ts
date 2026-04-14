@@ -66,12 +66,14 @@ export async function POST(request: Request) {
             await supabase.from('workshop_registrations').update({ preference_id: result.id }).eq('id', registrationId);
 
             return NextResponse.json({ url: result.init_point });
-        } catch (error: any) {
+        } catch (error) {
              console.error("Mercado Pago arrojó un error:", error);
-             return NextResponse.json({ error: "API MercadoPago: " + (error.message || JSON.stringify(error)) }, { status: 500 });
+             const e = error as Error;
+             return NextResponse.json({ error: "API MercadoPago: " + (e.message || JSON.stringify(e)) }, { status: 500 });
         }
 
-    } catch (error: any) {
-        return NextResponse.json({ error: "No se pudo procesar la solicitud general: " + error.message }, { status: 500 });
+    } catch (error) {
+        const e = error as Error;
+        return NextResponse.json({ error: "No se pudo procesar la solicitud general: " + e.message }, { status: 500 });
     }
 }

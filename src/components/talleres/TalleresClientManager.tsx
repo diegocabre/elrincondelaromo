@@ -58,9 +58,10 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
         } else {
             alert('Error al inicializar el pago: ' + (data.error || ''));
         }
-    } catch (e: any) {
+    } catch (e) {
         console.error(e);
-        alert('Hubo un error de conexión: ' + e.message);
+        const err = e as Error;
+        alert('Hubo un error de conexión: ' + err.message);
     }
   };
 
