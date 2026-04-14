@@ -56,11 +56,11 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
         if (data.url) {
             window.location.href = data.url;
         } else {
-            alert('Error al inicializar el pago.');
+            alert('Error al inicializar el pago: ' + (data.error || ''));
         }
-    } catch (e) {
+    } catch (e: any) {
         console.error(e);
-        alert('Hubo un error de conexión.');
+        alert('Hubo un error de conexión: ' + e.message);
     }
   };
 
