@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import TalleresClientManager, { Taller } from '@/components/talleres/TalleresClientManager';
 
@@ -25,7 +25,9 @@ export default async function TalleresPage() {
         </div>
 
         {/* Lógica de Cliente: Grillas y Galerías */}
-        <TalleresClientManager talleresData={talleresData} />
+        <Suspense fallback={<div className="text-center py-20">Cargando talleres...</div>}>
+            <TalleresClientManager talleresData={talleresData} />
+        </Suspense>
 
       </div>
     </main>

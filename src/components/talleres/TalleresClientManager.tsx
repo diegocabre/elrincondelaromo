@@ -1,7 +1,8 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { Image as ImageIcon, X, ChevronRight, ChevronLeft } from 'lucide-react';
@@ -44,6 +45,42 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
   const [galleryPhotos, setGalleryPhotos] = useState<WorkshopPhoto[]>([]);
   const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
   const [detailModal, setDetailModal] = useState<Taller | null>(null);
+
+  // Return Flow Estados
+  const [paymentSuccessPopup, setPaymentSuccessPopup] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+      // Si volvemos de Mercado Pago
+      const isSuccess = searchParams.get('success') === 'true';
+      const collection_id = searchParams.get('collection_id');
+      const payment_id = searchParams.get('payment_id');
+      const external_reference = searchParams.get('external_reference');
+
+      if (isSuccess && external_reference) {
+          setIsConfirming(true);
+          setPaymentSuccessPopup(true);
+
+          fetch('/api/confirm-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ external_reference, collection_id, payment_id })
+          }).then(res => res.json()).then(data => {
+              if (data.success) {
+                  setIsConfirming(false);
+                  router.replace('/talleres', { scroll: false });
+              } else {
+                  console.error("Error confirmando pago", data.error);
+                  setIsConfirming(false);
+              }
+          }).catch(e => {
+              console.error(e);
+              setIsConfirming(false);
+          });
+      }
+  }, [searchParams, router]);
 
   const handleCheckout = async (taller: Taller, payer: PayerData) => {
     try {
@@ -154,7 +191,50 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                     </div>
                 </motion.div>
             )}
+        </AnimatePresence>
 
+        {/* MODAL DE ÉXITO PAGO (RETORNO MERCADO PAGO) */}
+        <AnimatePresence>
+            {paymentSuccessPopup && (
+            <motion.div
+                className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
+                <motion.div
+                className="bg-[#FDFCF8] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative p-8 text-center"
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                >
+                {isConfirming ? (
+                    <div className="flex flex-col items-center py-6">
+                        <div className="w-16 h-16 border-4 border-[#8B5E3C]/30 border-t-[#8B5E3C] rounded-full animate-spin mb-6 mx-auto"></div>
+                        <h2 className="text-2xl font-semibold text-[#4A3B32] mb-2">Validando transacción...</h2>
+                        <p className="text-[#6B5A4E]">Estamos comunicándonos con Mercado Pago para verificar la seguridad de la transacción y anotarte en la lista.</p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center py-6">
+                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 mx-auto text-green-600">
+                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <h2 className="text-3xl font-bold text-[#4A3B32] mb-3">¡Pago Exitoso!</h2>
+                        <p className="text-[#6B5A4E] mb-6">Tu inscripción ha sido confirmada y tu cupo reservado. Te enviamos un correo electrónico detallado con toda la información.</p>
+                        <button
+                        onClick={() => setPaymentSuccessPopup(false)}
+                        className="bg-[#8B5E3C] text-[#FAEDDF] px-8 py-3 rounded-full font-medium hover:bg-[#6A462B] transition uppercase tracking-wide w-full"
+                        >
+                        Aceptar y Continuar
+                        </button>
+                    </div>
+                )}
+                </motion.div>
+            </motion.div>
+            )}
+        </AnimatePresence>
+
+        <AnimatePresence>
             {/* LIGHTBOX DETALLES DEL TALLER */}
             {detailModal && (
                 <WorkshopDetailModal 
