@@ -21,7 +21,9 @@ Esta plataforma no es solo una "Landing Page". Funciona como un sistema SaaS de 
 - **Optimización SEO:** Indexación robusta, generación dinámica de Sitemaps (`sitemap.xml`) y Open Graph (Tarjetas visuales para WhatsApp e Instagram).
 
 ### ⚙️ Panel de Administración (Backend/Dashboard)
-- **Gestión Ágil:** Sección privada (`/admin`) protegida por contraseñas/variables de entorno. No indexada por robots (`robots.txt`).
+- **Seguridad en Capas:** Sistema robusto de inicio de sesión validado mediante **JWT (JSON Web Tokens)** con contraseñas encriptadas nativamente a través de `bcryptjs`.
+- **Gestión Multi-Usuario:** Autenticación soportada por una tabla de administradores dedicada en base de datos.
+- **Gestión Ágil:** Sección estricta y privada (`/admin`) vigilada por _middlewares_ de Next.js de ruta cero. No indexada por robots (`robots.txt`).
 - **CRUD Centralizado:** Administración fluida en base de datos Supabase:
   - Creación dinámica de *Instructores* (con fotos autoprocesadas en Base64 para carga ligera).
   - Configuración de horarios generales y grillas de precios asociadas.
@@ -36,7 +38,8 @@ Esta plataforma no es solo una "Landing Page". Funciona como un sistema SaaS de 
 - **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
 - **Librería de UI:** [React 19](https://react.dev/) / Framer Motion (para transiciones y animaciones fluidas).
 - **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
-- **Base de Datos & Auth:** [Supabase](https://supabase.com/) (PostgreSQL + RLS Policies)
+- **Base de Datos:** [Supabase](https://supabase.com/) (PostgreSQL + RLS Policies)
+- **Autenticación (Seguridad):** JWT (Stateless Config) sin cookies de 3ros + `bcryptjs` en Edge/Server-Side.
 - **Pasarela de Pagos:** [SDK Oficial de Mercado Pago (Node.js)](https://www.mercadopago.cl/developers/)
 - **Correos Electrónicos:** [Resend API](https://resend.com/)
 
@@ -64,13 +67,14 @@ Esta plataforma no es solo una "Landing Page". Funciona como un sistema SaaS de 
    npm install
    \`\`\`
 
-2. Genera un archivo \`.env.local\` en la raíz principal. El proyecto depende completamente de estas llaves para funcionar:
+2. Genera un archivo `.env.local` en la raíz principal. El proyecto depende completamente de estas llaves para funcionar de principio a fin:
    \`\`\`env
    NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_key
-   ADMIN_PASSWORD=tu_admin_pass
+   SUPABASE_SERVICE_ROLE_KEY=tu_supabase_secret_role_key
+   ADMIN_PASSWORD=tu_admin_pass_fallback
+   ADMIN_EMAIL=tu_correo_de_administrador_fallback
    RESEND_API_KEY=tu_resend_api
-   ADMIN_EMAIL=tu_correo_de_administrador
    MP_ACCESS_TOKEN=APP_USR-tu-token-produccion-mercadopago
    \`\`\`
 
