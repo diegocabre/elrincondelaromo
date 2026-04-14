@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { Clock, PlusCircle, Tag, Users, X } from "lucide-react";
+import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 interface Instructor {
@@ -93,7 +94,7 @@ export default function AdminClasesPage() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const img = new Image();
+      const img = document.createElement('img');
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -301,7 +302,7 @@ export default function AdminClasesPage() {
         >
           <label className="flex flex-col items-center justify-center w-12 h-12 rounded-full border border-dashed border-[#EACCA4] overflow-hidden bg-[#FAEDDF] cursor-pointer shrink-0 hover:border-[#8B5E3C] transition-colors">
             {instImage ? (
-                <img src={instImage} alt="InstImage" className="w-full h-full object-cover" />
+                <Image src={instImage} alt="InstImage" width={48} height={48} className="w-full h-full object-cover" unoptimized />
             ) : (
                 <span className="text-[#8B5E3C] text-[10px] text-center font-bold px-1">FOTO</span>
             )}
@@ -352,7 +353,7 @@ export default function AdminClasesPage() {
                 </button>
               </div>
               {i.image_data ? (
-                 <img src={i.image_data} alt={i.name} className="w-12 h-12 rounded-full object-cover mb-2 border border-[#EACCA4]" />
+                 <Image src={i.image_data} alt={i.name} width={48} height={48} className="w-12 h-12 rounded-full object-cover mb-2 border border-[#EACCA4]" unoptimized />
               ) : (
                  <div className="w-12 h-12 rounded-full border border-[#EACCA4] mb-2 flex items-center justify-center bg-[#FAEDDF] text-[#8B5E3C]">
                    <Users size={20} />

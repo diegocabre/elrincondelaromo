@@ -111,7 +111,7 @@ export async function PUT(request: Request) {
             return NextResponse.json({ success: false, message: 'Campos incompletos' }, { status: 400 });
         }
 
-        let updateData: any = { email, nombre };
+        const updateData: { email: string; nombre: string; password_hash?: string } = { email, nombre };
 
         if (password) {
             if (password.length < 6) return NextResponse.json({ success: false, message: 'Mínimo 6 chars para password' }, { status: 400 });

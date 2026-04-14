@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Clock, Tag, Users, CheckCircle2, UserCircle2 } from 'lucide-react';
 
@@ -121,7 +122,7 @@ export default function BienestarInfo({ therapies, instructors = [], schedules =
                             <div key={inst.id} className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
                                 <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2 flex items-center gap-2">
                                     {inst.image_data ? (
-                                        <img src={inst.image_data} alt={inst.name} className="w-8 h-8 rounded-full object-cover border border-[#EACCA4] shadow-sm shrink-0" />
+                                        <Image src={inst.image_data} alt={inst.name} width={32} height={32} className="w-8 h-8 rounded-full object-cover border border-[#EACCA4] shadow-sm shrink-0" unoptimized />
                                     ) : (
                                         <div className="w-8 h-8 bg-[#FAEDDF] rounded-full flex items-center justify-center text-[#8B5E3C] shrink-0">
                                             <UserCircle2 size={20} strokeWidth={1.5} />
@@ -180,7 +181,7 @@ export default function BienestarInfo({ therapies, instructors = [], schedules =
                         instructors.map((inst, idx) => (
                             <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-[#EACCA4]/20 flex flex-col items-center text-center group hover:shadow-md transition-all">
                                 {inst.image_data ? (
-                                    <img src={inst.image_data} alt={inst.name} className="w-16 h-16 rounded-full object-cover mb-3 border border-[#EACCA4] group-hover:scale-110 transition-transform shadow-sm" />
+                                    <Image src={inst.image_data} alt={inst.name} width={64} height={64} className="w-16 h-16 rounded-full object-cover mb-3 border border-[#EACCA4] group-hover:scale-110 transition-transform shadow-sm" unoptimized />
                                 ) : (
                                     <div className="w-16 h-16 bg-[#FAEDDF] rounded-full flex items-center justify-center mb-3 text-[#8B5E3C] group-hover:scale-110 transition-transform">
                                         <UserCircle2 size={40} strokeWidth={1.5} />
