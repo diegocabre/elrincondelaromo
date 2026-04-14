@@ -116,7 +116,8 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, message: "Pago confirmado exitosamente." });
 
-    } catch (e: any) {
+    } catch (error) {
+        const e = error as Error;
         console.error("Error fatal en /api/confirm-payment:", e);
         return NextResponse.json({ error: "Ocurrió un error inesperado al procesar el retorno" }, { status: 500 });
     }
