@@ -10,6 +10,9 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { item, payer } = body;
         
+        const reqUrl = new URL(request.url);
+        const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
+
         // 1. Guardar en Supabase el registro en estado Pendiente
         const { data: registration, error: dbError } = await supabase
             .from('workshop_registrations')
@@ -53,9 +56,9 @@ export async function POST(request: Request) {
                         }
                     },
                     back_urls: {
-                        success: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/talleres?success=true`,
-                        failure: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/talleres?success=false`,
-                        pending: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/talleres?success=pending`
+                        success: `${baseUrl}/talleres?success=true`,
+                        failure: `${baseUrl}/talleres?success=false`,
+                        pending: `${baseUrl}/talleres?success=pending`
                     },
                     auto_return: "approved",
                     external_reference: registrationId, // Vinculamos la compra con nuestra BD
