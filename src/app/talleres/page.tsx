@@ -1,8 +1,18 @@
 import React, { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { supabase } from '@/lib/supabase';
 import TalleresClientManager, { Taller } from '@/components/talleres/TalleresClientManager';
 
 export const revalidate = 0; // Prevenir caching stales si suben talleres nuevos (Opcionalmente usa revalidate = 60 para cachear cada minuto en Vercel)
+
+export const metadata: Metadata = {
+  title: 'Talleres y Cursos',
+  description: 'Descubre nuestros talleres y cursos comunitarios diseñados para inspirarte y conectar.',
+  openGraph: {
+    title: 'Talleres y Cursos | El Rincón del Aromo',
+    description: 'Aprende y conecta con nuestros talleres especializados. Reserva tu cupo en línea.',
+  }
+};
 
 export default async function TalleresPage() {
   // Data fetched directamente en Servidor! Sin Loading Spinners en Cliente.
