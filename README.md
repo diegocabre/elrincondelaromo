@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌿 El Rincón del Aromo - Wellness & Specialty Coffee
 
-## Getting Started
+Bienvenido al repositorio oficial de **El Rincón del Aromo**, una plataforma web Integral construida de forma moderna para gestionar un espacio físico y digital de cafetería de especialidad, comunidad de coworking, talleres interactivos y terapias de bienestar holístico.
 
-First, run the development server:
+![Arquitectura: Next.js](https://img.shields.io/badge/Next.js-15.0-black?logo=next.js&logoColor=white)
+![Lenguaje: TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue?logo=typescript&logoColor=white)
+![Estilos: Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)
+![Plataforma: Vercel](https://img.shields.io/badge/Hosting-Vercel-black?logo=vercel&logoColor=white)
+![Base de Datos: Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase&logoColor=white)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Características Principales
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Esta plataforma no es solo una "Landing Page". Funciona como un sistema SaaS de gestión interna (Dashboard) acoplado a un hermoso frontend para clientes.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 👥 Portal Público (Frontend)
+- **UI/UX Premium:** Diseño *responsive*, minimalista, usando tipografías Montserrat y Dancing Script, con paletas de colores corporativos amaderados y cálidos (`#8B5E3C`, `#FAEDDF`).
+- **Talleres y Cursos:** Grillas dinámicas interactuables, Carruseles de fotos en pantalla completa (Lightbox), e inscripciones automatizadas.
+- **Terapias y Bienestar:** Reserva de horas por especialidad mediante calendarios inteligentes interactivos de alta fricción cero.
+- **Pago en Línea:** Integración nativa con **Mercado Pago Checkout v2**. Interceptación automática de fallos, retornos y éxito de ventas.
+- **Optimización SEO:** Indexación robusta, generación dinámica de Sitemaps (`sitemap.xml`) y Open Graph (Tarjetas visuales para WhatsApp e Instagram).
 
-## Learn More
+### ⚙️ Panel de Administración (Backend/Dashboard)
+- **Gestión Ágil:** Sección privada (`/admin`) protegida por contraseñas/variables de entorno. No indexada por robots (`robots.txt`).
+- **CRUD Centralizado:** Administración fluida en base de datos Supabase:
+  - Creación dinámica de *Instructores* (con fotos autoprocesadas en Base64 para carga ligera).
+  - Configuración de horarios generales y grillas de precios asociadas.
+  - Control de Cupos y "Modo Edición" en tiempo real sin recargar la página.
+- **Facturación y Reportes:** Módulo de pagos automáticos que notifica cambios de estado directo a la base de datos tras una interacción del cliente con Mercado Pago.
+- **Notificaciones:** Motor transaccional **Resend** que despacha automáticamente correos HTML pulidos al estudiante cuando su pago ha sido procesado exitosamente.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠 Stack Tecnológico
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
+- **Librería de UI:** [React 19](https://react.dev/) / Framer Motion (para transiciones y animaciones fluidas).
+- **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
+- **Base de Datos & Auth:** [Supabase](https://supabase.com/) (PostgreSQL + RLS Policies)
+- **Pasarela de Pagos:** [SDK Oficial de Mercado Pago (Node.js)](https://www.mercadopago.cl/developers/)
+- **Correos Electrónicos:** [Resend API](https://resend.com/)
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📦 Estructura de Rutas y Páginas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/` → Home y Servicios Core.
+- `/talleres` → Cartelera de Talleres Activos, Agotados y Realizados + Checkout MP.
+- `/bienestar` → Módulo de Terapias y clases de Yoga/Pilates asociado por instructor.
+- `/admin` → Raíz del Dashboard.
+- `/admin/clases` → Panel relacional de Instructores, Precios y Días.
+- `/admin/talleres` → Creación de talleres y llenado de descripciones duales encapsuladas (Cortas/Total).
+- `/api/checkout` → API Route que levanta la preferencia a Mercado Pago y guarda pre-registros.
+- `/api/confirm-payment` → Recibe la rederección de pago, detecta éxito, muta la BD y envía correos.
+
+---
+
+## 💻 Desarrollo y Despliegue Configuración Local
+
+1. Clona el repositorio e instala dependencias:
+   \`\`\`bash
+   git clone https://github.com/diegocabre/elrincondelaromo.git
+   cd elrincondelaromo
+   npm install
+   \`\`\`
+
+2. Genera un archivo \`.env.local\` en la raíz principal. El proyecto depende completamente de estas llaves para funcionar:
+   \`\`\`env
+   NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_key
+   ADMIN_PASSWORD=tu_admin_pass
+   RESEND_API_KEY=tu_resend_api
+   ADMIN_EMAIL=tu_correo_de_administrador
+   MP_ACCESS_TOKEN=APP_USR-tu-token-produccion-mercadopago
+   \`\`\`
+
+3. Levanta el servidor local:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+
+> **Nota para Producción:** Al lanzar sobre Vercel, asegúrate siempre de duplicar estas mismas variables en los *Project Settings > Environment Variables* y volver a hacer *Redeploy* frente a cualquier cambio de token.
+
+---
+
+## 🛡 Permisos y Base de Datos (Supabase SQL)
+
+El proyecto utiliza "Row Level Security" (RLS) habilitado. Asegúrese de que sus tablas en PostgreSQL tengan permisos de inserción públicos (`anon`) para módulos críticos como \`workshop_registrations\` de cara al Webhook/Retorno de Mercado Pago.
+
+---
+*Desarrollado con ❤️ para El Rincón del Aromo.*
