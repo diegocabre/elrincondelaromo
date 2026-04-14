@@ -3,6 +3,12 @@ import { getSessionPayload } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import bcrypt from 'bcryptjs';
 
+const SUPER_ADMIN = process.env.ADMIN_EMAIL || 'contacto@rincondelaromo.com';
+
+function isSuperAdmin(email: string) {
+    return email === SUPER_ADMIN;
+}
+
 export async function GET() {
     const session = await getSessionPayload();
     if (!session) {
@@ -12,7 +18,8 @@ export async function GET() {
     try {
         const { data: users, error } = await supabaseAdmin
             .from('admin_users')
-            .select('id, email, created_at');
+            .select('id, email, nombre, created_at')
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
         
@@ -25,16 +32,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
     const session = await getSessionPayload();
-    if (!session || session.role !== 'admin') {
-        return NextResponse.json({ success: false, message: 'No Autorizado' }, { status: 403 });
+    if (!session || !isSuperAdmin(session.email as string)) {
+        return NextResponse.json({ success: false, message: 'Sólo el Administrador Principal puede crear usuarios' }, { status: 403 });
     }
 
     try {
         const body = await request.json();
-        const { email, password } = body;
+        const { email, password, nombre } = body;
 
-        if (!email || !password || password.length < 6) {
-            return NextResponse.json({ success: false, message: 'Email y contraseña válida (mín 6 req)' }, { status: 400 });
+        if (!email || !password || password.length < 6 || !nombre) {
+            return NextResponse.json({ success: false, message: 'Email, nombre y contraseña válidos (mín 6 req)' }, { status: 400 });
         }
 
         // Hashear password
@@ -44,8 +51,8 @@ export async function POST(request: Request) {
         // Insertar en Supabase
         const { data: user, error } = await supabaseAdmin
             .from('admin_users')
-            .insert([{ email, password_hash }])
-            .select('id, email, created_at')
+            .insert([{ email, nombre, password_hash }])
+            .select('id, email, nombre, created_at')
             .single();
 
         if (error) {
@@ -58,6 +65,72 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, user });
     } catch (err) {
         console.error("POST user error:", err);
+        return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request) {
+    const session = await getSessionPayload();
+    if (!session || !isSuperAdmin(session.email as string)) {
+        return NextResponse.json({ success: false, message: 'Sólo el Administrador Principal puede borrar usuarios' }, { status: 403 });
+    }
+
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json({ success: false, message: 'ID de usuario requerido' }, { status: 400 });
+        }
+
+        const { error } = await supabaseAdmin
+            .from('admin_users')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        
+        return NextResponse.json({ success: true, message: 'Usuario borrado' });
+    } catch (err) {
+        console.error("DELETE user error:", err);
+        return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
+    }
+}
+
+export async function PUT(request: Request) {
+    const session = await getSessionPayload();
+    if (!session || !isSuperAdmin(session.email as string)) {
+        return NextResponse.json({ success: false, message: 'Sólo el Administrador Principal puede editar usuarios' }, { status: 403 });
+    }
+
+    try {
+        const body = await request.json();
+        const { id, email, nombre, password } = body;
+
+        if (!id || !email || !nombre) {
+            return NextResponse.json({ success: false, message: 'Campos incompletos' }, { status: 400 });
+        }
+
+        let updateData: any = { email, nombre };
+
+        if (password) {
+            if (password.length < 6) return NextResponse.json({ success: false, message: 'Mínimo 6 chars para password' }, { status: 400 });
+            const salt = await bcrypt.genSalt(10);
+            updateData.password_hash = await bcrypt.hash(password, salt);
+        }
+
+        const { data: user, error } = await supabaseAdmin
+            .from('admin_users')
+            .update(updateData)
+            .eq('id', id)
+            .select('id, email, nombre, created_at')
+            .single();
+
+        if (error) throw error;
+
+        return NextResponse.json({ success: true, user });
+    } catch (err) {
+        console.error("PUT user error:", err);
         return NextResponse.json({ success: false, message: 'Server error' }, { status: 500 });
     }
 }
