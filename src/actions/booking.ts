@@ -3,7 +3,7 @@
 import { supabase } from '@/lib/supabase';
 import { Resend } from 'resend';
 import { headers } from 'next/headers';
-import { isLikelySpam } from '@/lib/spam-filter';
+import { isLikelySpam, validateEmailDomain } from '@/lib/spam-filter';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -48,6 +48,13 @@ export async function createBookingAction(formData: FormData) {
   if (spamCheck.spam) {
     console.warn(`[SPAM] Detectado en booking. Razón: ${spamCheck.reason} | IP: ${ip} | Nombre: ${name}`);
     return { success: false, error: 'Los datos ingresados no son válidos. Por favor revísalos e intenta de nuevo.' };
+  }
+
+  // --- SEGURIDAD: Verificación de dominio de email (DNS MX lookup) ---
+  const emailCheck = await validateEmailDomain(email);
+  if (!emailCheck.valid) {
+    console.warn(`[SPAM] Email con dominio inválido en booking. Email: ${email} | IP: ${ip}`);
+    return { success: false, error: 'El correo electrónico ingresado no es válido o no existe. Por favor verifica tu email.' };
   }
 
   // Se usa directamente el ISO date exacto del cupo para evitar errores de parseo por zonas o idiomas

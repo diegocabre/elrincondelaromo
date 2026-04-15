@@ -2,7 +2,7 @@
 
 import { Resend } from 'resend';
 import { headers } from 'next/headers';
-import { isLikelySpam } from '@/lib/spam-filter';
+import { isLikelySpam, validateEmailDomain } from '@/lib/spam-filter';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -47,6 +47,13 @@ export async function submitContactAction(formData: FormData) {
     console.warn(`[SPAM] Detectado en contacto. Razón: ${spamCheck.reason} | IP: ${ip} | Nombre: ${name}`);
     // Devolvemos error genérico (no revelar la razón exacta al atacante)
     return { success: false, error: 'El formulario no pudo ser enviado. Por favor revisa los datos ingresados e intenta de nuevo.' };
+  }
+
+  // --- SEGURIDAD: Verificación de dominio de email (DNS MX lookup) ---
+  const emailCheck = await validateEmailDomain(email);
+  if (!emailCheck.valid) {
+    console.warn(`[SPAM] Email con dominio inválido en contacto. Email: ${email} | IP: ${ip}`);
+    return { success: false, error: 'El correo electrónico ingresado no es válido o no existe. Por favor verifica tu email.' };
   }
 
   // Si no hay API KEY, devolvemos success pero avisamos por consola
