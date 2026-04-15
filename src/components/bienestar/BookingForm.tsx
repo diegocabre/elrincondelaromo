@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createBookingAction } from '@/actions/booking';
 
 import { motion } from 'framer-motion';
@@ -32,8 +32,14 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const formTimeRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
+        // Guardar el timestamp de carga para detectar bots ultrarrápidos
+        if (formTimeRef.current) {
+            formTimeRef.current.value = Date.now().toString();
+        }
+
         const therapyId = therapies.find(t => t.title === selectedTherapyTitle)?.id;
         if (!therapyId) {
             setSlots([]);
@@ -128,6 +134,19 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
             )}
 
             <form action={handleSubmit} className="flex flex-col gap-5">
+                {/* ── Campos de seguridad anti-spam ─────────────────────────── */}
+                {/* Honeypot: invisible para humanos, los bots lo rellenan */}
+                <input
+                    type="text"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    style={{ display: 'none' }}
+                />
+                {/* Timestamp de carga del formulario */}
+                <input type="hidden" name="_ft" ref={formTimeRef} />
+                {/* ───────────────────────────────────────────────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Nombre Completo</label>

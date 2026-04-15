@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaInstagram, FaWhatsapp, FaMapMarkerAlt, FaEnvelope, FaClock } from 'react-icons/fa';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -20,6 +20,14 @@ export default function ContactoPage() {
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const formTimeRef = useRef<HTMLInputElement>(null);
+
+    // Guardar el timestamp de carga del formulario para detectar envíos ultrarrápidos (bots)
+    useEffect(() => {
+        if (formTimeRef.current) {
+            formTimeRef.current.value = Date.now().toString();
+        }
+    }, []);
 
     const handleSubmit = async (formData: FormData) => {
         setLoading(true);
@@ -31,6 +39,8 @@ export default function ContactoPage() {
         if (res.success && res.message) {
             setSuccessMessage(res.message);
             document.querySelector("form")?.reset();
+            // Restaurar el timestamp tras reset
+            if (formTimeRef.current) formTimeRef.current.value = Date.now().toString();
         } else {
             setErrorMessage(res.error || 'Error al enviar.');
         }
@@ -141,6 +151,19 @@ export default function ContactoPage() {
                         )}
 
                         <form action={handleSubmit} className="space-y-6">
+                            {/* ── Campos de seguridad anti-spam ────────────────────────────── */}
+                            {/* Honeypot: invisible para humanos, los bots lo rellenan */}
+                            <input
+                                type="text"
+                                name="website"
+                                tabIndex={-1}
+                                autoComplete="off"
+                                aria-hidden="true"
+                                style={{ display: 'none' }}
+                            />
+                            {/* Timestamp de carga del formulario */}
+                            <input type="hidden" name="_ft" ref={formTimeRef} />
+                            {/* ─────────────────────────────────────────────────────────────── */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="flex flex-col gap-2">
                                     <label htmlFor="nombre" className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Nombre completo</label>

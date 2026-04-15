@@ -1,6 +1,9 @@
 "use server";
 
 import { Resend } from 'resend';
+import { headers } from 'next/headers';
+import { isLikelySpam } from '@/lib/spam-filter';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
@@ -13,9 +16,37 @@ export async function submitContactAction(formData: FormData) {
   const email = formData.get('email') as string;
   const subject = formData.get('asunto') as string;
   const message = formData.get('mensaje') as string;
+  // Campos de seguridad
+  const honeypot = formData.get('website') as string;
+  const formTime = formData.get('_ft') as string;
+
+  // --- SEGURIDAD: Honeypot ---
+  // Si el campo oculto fue llenado → es un bot, rechazar silenciosamente
+  if (honeypot) {
+    console.warn('[SPAM] Honeypot activado en contacto. IP probable bot.');
+    // Devolvemos "éxito" falso para no alertar al bot
+    return { success: true, message: '¡Tu mensaje ha sido enviado exitosamente! Nos contactaremos pronto contigo.' };
+  }
 
   if (!name || !email || !subject || !message) {
     return { success: false, error: 'Por favor, completa todos los campos requeridos.' };
+  }
+
+  // --- SEGURIDAD: Rate Limiting por IP ---
+  const reqHeaders = await headers();
+  const ip = getClientIp(reqHeaders);
+  const rateCheck = checkRateLimit(`contact:${ip}`);
+  if (!rateCheck.allowed) {
+    console.warn(`[SPAM] Rate limit excedido para IP: ${ip} en formulario de contacto.`);
+    return { success: false, error: 'Has enviado demasiados mensajes en poco tiempo. Por favor, espera unos minutos antes de intentar de nuevo.' };
+  }
+
+  // --- SEGURIDAD: Filtro de contenido inteligente ---
+  const spamCheck = isLikelySpam(name, email, message, formTime);
+  if (spamCheck.spam) {
+    console.warn(`[SPAM] Detectado en contacto. Razón: ${spamCheck.reason} | IP: ${ip} | Nombre: ${name}`);
+    // Devolvemos error genérico (no revelar la razón exacta al atacante)
+    return { success: false, error: 'El formulario no pudo ser enviado. Por favor revisa los datos ingresados e intenta de nuevo.' };
   }
 
   // Si no hay API KEY, devolvemos success pero avisamos por consola
@@ -90,4 +121,3 @@ export async function submitContactAction(formData: FormData) {
     return { success: false, error: 'Hubo un inconveniente crítico con nuestro servidor de correos. Intenta más tarde.' };
   }
 }
-

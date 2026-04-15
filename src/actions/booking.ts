@@ -2,6 +2,9 @@
 
 import { supabase } from '@/lib/supabase';
 import { Resend } from 'resend';
+import { headers } from 'next/headers';
+import { isLikelySpam } from '@/lib/spam-filter';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
@@ -14,9 +17,37 @@ export async function createBookingAction(formData: FormData) {
   const selectedDate = formData.get('selectedDate') as string;
   const selectedTime = formData.get('selectedTime') as string;
   const isoDate = formData.get('isoDate') as string;
+  // Campos de seguridad
+  const honeypot = formData.get('website') as string;
+  const formTime = formData.get('_ft') as string;
+
+  // --- SEGURIDAD: Honeypot ---
+  // Campo invisible que solo los bots rellenan
+  if (honeypot) {
+    console.warn('[SPAM] Honeypot activado en booking. IP probable bot.');
+    // Devolvemos "éxito" falso para no alertar al bot
+    return { success: true, message: `¡Cita agendada para ${name}! Nos contactaremos contigo al email ${email} para confirmar los detalles.` };
+  }
 
   if (!name || !email || !selectedService || !isoDate) {
     return { success: false, error: 'Por favor, completa todos los campos para agendar.' };
+  }
+
+  // --- SEGURIDAD: Rate Limiting por IP ---
+  const reqHeaders = await headers();
+  const ip = getClientIp(reqHeaders);
+  const rateCheck = checkRateLimit(`booking:${ip}`);
+  if (!rateCheck.allowed) {
+    console.warn(`[SPAM] Rate limit excedido para IP: ${ip} en formulario de agenda.`);
+    return { success: false, error: 'Has enviado demasiadas solicitudes en poco tiempo. Por favor, espera unos minutos antes de intentar de nuevo.' };
+  }
+
+  // --- SEGURIDAD: Filtro de contenido inteligente ---
+  // En booking no hay mensaje, solo validamos nombre y email
+  const spamCheck = isLikelySpam(name, email, undefined, formTime);
+  if (spamCheck.spam) {
+    console.warn(`[SPAM] Detectado en booking. Razón: ${spamCheck.reason} | IP: ${ip} | Nombre: ${name}`);
+    return { success: false, error: 'Los datos ingresados no son válidos. Por favor revísalos e intenta de nuevo.' };
   }
 
   // Se usa directamente el ISO date exacto del cupo para evitar errores de parseo por zonas o idiomas
@@ -45,7 +76,7 @@ export async function createBookingAction(formData: FormData) {
         // Fechas para google calendar (asume cita de 1 hora aprox)
         const start = new Date(finalDateTime);
         const end = new Date(start.getTime() + 60 * 60 * 1000); 
-        const formatDateForCal = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
+        const formatDateForCal = (d: Date) => d.toISOString().replace(/-|:|\\.\\d\\d\\d/g, '');
         const calDates = `${formatDateForCal(start)}/${formatDateForCal(end)}`;
         const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Cita+en+Rincón+del+Aromo+-+${encodeURIComponent(selectedService)}&details=Cita+para+${encodeURIComponent(name)}+en+Rincón+del+Aromo.&dates=${calDates}`;
 
