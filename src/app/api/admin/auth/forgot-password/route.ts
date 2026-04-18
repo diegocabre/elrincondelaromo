@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 
         // Send Email
         await resend.emails.send({
-            from: 'El Rincón del Aromo <no-reply@rincondelaromo.com>', // Replace with your verified sender domain on Resend
+            from: 'Rincón del Aromo <no-reply@rincondelaromo.com>', // Replace with your verified sender domain on Resend
             to: email,
             subject: 'Recuperación de Contraseña - Panel Administrativo',
             html: `
