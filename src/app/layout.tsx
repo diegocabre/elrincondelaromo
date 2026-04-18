@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Montserrat, Dancing_Script } from "next/font/google";
+import { Dancing_Script, Montserrat } from "next/font/google";
 
-import "./globals.css";
-import { NavBar } from "@/components/nav/NavBar";
 import Footer from "@/components/footer/Footer";
+import { NavBar } from "@/components/nav/NavBar";
+import "./globals.css";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -18,39 +18,50 @@ const dancingScript = Dancing_Script({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.rincondelaromo.com'),
+  metadataBase: new URL("https://www.rincondelaromo.com"),
   title: {
-    default: "El Rincón del Aromo | Cafetería, Talleres y Bienestar",
-    template: "%s | El Rincón del Aromo",
+    default: "Rincón del Aromo | Cafetería, Talleres y Cowork",
+    template: "%s | Rincón del Aromo",
   },
-  description: "Un refugio en la ciudad. Disfruta de café de especialidad, coworking, talleres de la comunidad y un espacio seguro para tu bienestar.",
-  keywords: ["Cafetería", "Bienestar", "Talleres", "Coworking", "Café de Especialidad", "Terapias", "Los Aromos"],
+  description:
+    "Un refugio en la ciudad. Disfruta de café de especialidad, coworking, talleres de la comunidad y un espacio seguro para tu bienestar.",
+  keywords: [
+    "Cafetería",
+    "Bienestar",
+    "Talleres",
+    "Cowork",
+    "Café de Especialidad",
+    "Terapias",
+    "Los Aromos",
+  ],
   openGraph: {
-    type: 'website',
-    locale: 'es_CL',
-    url: 'https://www.rincondelaromo.com',
-    siteName: 'El Rincón del Aromo',
-    title: 'El Rincón del Aromo | Cafetería, Talleres y Bienestar',
-    description: 'Un refugio en la ciudad. Disfruta de café de especialidad, coworking y talleres para tu bienestar.',
+    type: "website",
+    locale: "es_CL",
+    url: "https://www.rincondelaromo.com",
+    siteName: "Rincón del Aromo",
+    title: "Rincón del Aromo | Cafetería, Talleres y Cowork",
+    description:
+      "Un refugio en la ciudad. Disfruta de café de especialidad, coworking y talleres para tu bienestar.",
     images: [
       {
-        url: '/og-image.jpg', // Agrega esta imagen en la carpeta public
+        url: "/og-image.jpg", // Agrega esta imagen en la carpeta public
         width: 1200,
         height: 630,
-        alt: 'Fachada o Logo de El Rincón del Aromo',
+        alt: "Fachada o Logo de El Rincón del Aromo",
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'El Rincón del Aromo',
-    description: 'Café de especialidad, coworking, talleres y un espacio para tu bienestar.',
-    images: ['/og-image.jpg'],
+    card: "summary_large_image",
+    title: "El Rincón del Aromo",
+    description:
+      "Café de especialidad, coworking, talleres y un espacio para tu bienestar.",
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
     follow: true,
-  }
+  },
 };
 
 export default function RootLayout({
