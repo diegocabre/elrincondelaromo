@@ -109,15 +109,15 @@ export default function AdminTalleresPage() {
 
         let dbError;
         if (editId) {
-            const payload: any = {
+            const payload = {
                 title: formData.title,
                 category: formData.category,
                 description: combinedDescription,
                 price: priceNum,
                 date_info: formData.date_info,
-                status: formData.status
+                status: formData.status,
+                ...(imageUrl ? { image_url: imageUrl } : {})
             };
-            if (imageUrl) payload.image_url = imageUrl;
             const { error: updateError } = await supabase.from('workshops').update(payload).eq('id', editId);
             dbError = updateError;
         } else {
