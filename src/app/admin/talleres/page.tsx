@@ -39,7 +39,7 @@ export default function AdminTalleresPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [galleryModal, setGalleryModal] = useState<string | null>(null);
-    const [registrationsModal, setRegistrationsModal] = useState<{id: string, title: string} | null>(null);
+    const [registrationsModal, setRegistrationsModal] = useState<{id: string, title: string, bank_details?: string} | null>(null);
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [loadingRegs, setLoadingRegs] = useState(false);
     
@@ -201,8 +201,8 @@ export default function AdminTalleresPage() {
         }
     };
 
-    const handleOpenRegistrations = async (id: string, title: string) => {
-        setRegistrationsModal({id, title});
+    const handleOpenRegistrations = async (id: string, title: string, bank_details: string) => {
+        setRegistrationsModal({id, title, bank_details});
         setLoadingRegs(true);
         const { data } = await supabase.from('workshop_registrations').select('*').eq('workshop_id', id).order('created_at', { ascending: false });
         setRegistrations(data || []);
@@ -261,7 +261,7 @@ export default function AdminTalleresPage() {
                         setIsFormOpen(!isFormOpen);
                         if(isFormOpen) {
                              setEditId(null);
-                             setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo', payment_mode: 'mercadopago' });
+                             setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo', payment_mode: 'mercadopago', bank_details: '' });
                         }
                     }}
                     className="bg-[#8B5E3C] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md flex items-center gap-2"
@@ -419,6 +419,7 @@ export default function AdminTalleresPage() {
                                         <tbody>
                                             {registrations.map(r => {
                                                 const rawPhone = r.student_phone.replace(/\D/g, '');
+                                                const textToAdmin = `¡Hola! Vimos tu pre-inscripción al taller "${registrationsModal.title}".\n\nTe recordamos que para asegurar tu cupo debes realizar el pago en las próximas horas.\n\nAquí tienes los datos para la transferencia del profesor:\n${registrationsModal.bank_details || ''}\n\nPor favor, envíanos el comprobante por este medio respondiendo a este mensaje para confirmar tu lugar. ¡Muchas gracias!`;
                                                 const waLink = `https://wa.me/${rawPhone}?text=${encodeURIComponent(textToAdmin)}`;
                                                 return (
                                                 <tr key={r.id} className="border-t border-[#EACCA4]/30 hover:bg-white/50">
@@ -460,17 +461,16 @@ export default function AdminTalleresPage() {
 }
 
 // Componente Tarjeta Taller Administrador
-function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handleUpdateStatus, handleOpenRegistrations }: { t: Taller, handleDelete: (id: string, title: string) => void, handleEdit: (t: Taller) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void, handleOpenRegistrations: (id: string, title: string) => void }) {
+function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handleUpdateStatus, handleOpenRegistrations }: { t: Taller, handleDelete: (id: string, title: string) => void, handleEdit: (t: Taller) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void, handleOpenRegistrations: (id: string, title: string, bank_details: string) => void }) {
     
     // Extractor del JSON si se usó la nueva forma
+    let summaryText = t.description;
     let bank_details = '';
     try {
         const parsed = JSON.parse(t.description);
         if (parsed.short) summaryText = parsed.short;
         if (parsed.bank_details) bank_details = parsed.bank_details;
     } catch {}
-
-    const textToAdmin = `¡Hola! Vimos tu pre-inscripción al taller "${t.title}".\n\nTe recordamos que para asegurar tu cupo debes realizar el pago en las próximas horas.\n\nAquí tienes los datos para la transferencia del profesor:\n${bank_details}\n\nPor favor, envíanos el comprobante por este medio respondiendo a este mensaje para confirmar tu lugar. ¡Muchas gracias!`;
 
     return (
         <div className="bg-white rounded-[2rem] shadow-sm border border-[#EACCA4]/30 flex flex-col items-start overflow-hidden hover:shadow-lg transition-all relative h-full">
@@ -517,7 +517,7 @@ function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handl
                     <button onClick={() => handleEdit(t)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
                          Editar
                     </button>
-                    <button onClick={() => handleOpenRegistrations(t.id, t.title)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
+                    <button onClick={() => handleOpenRegistrations(t.id, t.title, bank_details)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
                         Inscritos
                     </button>
                     {t.status === 'realizado' && (
