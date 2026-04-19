@@ -36,6 +36,11 @@ export async function POST(request: Request) {
             const workshopDate = registration.workshops?.date_info || item.date_info || "Fecha por definir";
             const userName = `${registration.student_name} ${registration.student_surname}`.trim();
             const userEmail = registration.student_email;
+            let bank_details = '';
+            try {
+                const parsed = JSON.parse(item.description);
+                if (parsed.bank_details) bank_details = parsed.bank_details;
+            } catch {}
 
             try {
                 // Email al Cliente
@@ -56,7 +61,15 @@ export async function POST(request: Request) {
                                     <h3 style="margin-top: 0; color: #4A3B32;">Detalles del Taller</h3>
                                     <p style="margin-bottom: 5px;"><strong>🌟 Taller:</strong> ${workshopTitle}</p>
                                     <p style="margin-bottom: 0;"><strong>📅 Fecha:</strong> ${workshopDate}</p>
-                                    <p style="margin-top: 10px; color: #d97706; font-weight: bold;">⚠️ Tienes 24 horas para realizar el pago ($${Number(item.price).toLocaleString('es-CL')}) al profesor asignado para asegurar definitivamente el cupo. Nos pondremos en contacto contigo a la brevedad vía WhatsApp enviándote los datos de la transferencia bancaria.</p>
+                                    <p style="margin-top: 10px; color: #d97706; font-weight: bold;">⚠️ Tienes 24 horas para realizar el pago ($${Number(item.price).toLocaleString('es-CL')}) para asegurar definitivamente tu cupo.</p>
+                                    
+                                    ${bank_details ? `
+                                    <div style="margin-top: 15px; padding: 10px; background-color: #FAEDDF; border-radius: 8px;">
+                                        <p style="margin: 0; font-weight: bold; color: #8B5E3C;">Datos de Transferencia del Profesor:</p>
+                                        <p style="margin: 5px 0 0 0; white-space: pre-wrap; font-size: 14px;">${bank_details}</p>
+                                    </div>
+                                    <p style="margin-top: 10px; font-size: 14px;">Por favor, transfiere el monto total y <strong>responde a este correo enviándonos el comprobante</strong> para validar tu pago.</p>
+                                    ` : `<p style="margin-top: 10px; font-size: 14px;">Pronto te contactaremos por WhatsApp para enviarte los datos de transferencia correspondientes.</p>`}
                                 </div>
                                 
                                 <p style="font-size: 16px;">Si tienes alguna duda técnica o sobre la ubicación, contáctanos respondiendo a este correo o vía WhatsApp al número del centro.</p>

@@ -52,7 +52,8 @@ export default function AdminTalleresPage() {
         price: '',
         date_info: '',
         status: 'activo',
-        payment_mode: 'mercadopago'
+        payment_mode: 'mercadopago',
+        bank_details: ''
     });
     const [tempDate, setTempDate] = useState({ day: '', start: '', end: '' });
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -117,7 +118,8 @@ export default function AdminTalleresPage() {
         const combinedDescription = JSON.stringify({
             short: formData.description,
             full: formData.full_description || formData.description,
-            payment: formData.payment_mode
+            payment: formData.payment_mode,
+            ...(formData.payment_mode === 'sitio' ? { bank_details: formData.bank_details } : {})
         });
 
         let dbError;
@@ -150,7 +152,7 @@ export default function AdminTalleresPage() {
 
         if (!dbError) {
             alert(editId ? 'Taller actualizado con éxito' : 'Taller creado con éxito');
-            setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo', payment_mode: 'mercadopago' });
+            setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo', payment_mode: 'mercadopago', bank_details: '' });
             setTempDate({ day: '', start: '', end: '' });
             setImageFile(null);
             setEditId(null);
@@ -165,11 +167,13 @@ export default function AdminTalleresPage() {
         let short = t.description;
         let full = t.description;
         let payment_mode = 'mercadopago';
+        let bank_details = '';
         try {
             const parsed = JSON.parse(t.description);
             if (parsed.short) short = parsed.short;
             if (parsed.full) full = parsed.full;
             if (parsed.payment) payment_mode = parsed.payment;
+            if (parsed.bank_details) bank_details = parsed.bank_details;
         } catch {}
         
         setFormData({
@@ -180,7 +184,8 @@ export default function AdminTalleresPage() {
             price: t.price.toString(),
             date_info: t.date_info,
             status: t.status,
-            payment_mode: payment_mode
+            payment_mode: payment_mode,
+            bank_details: bank_details
         });
         setEditId(t.id);
         setIsFormOpen(true);
@@ -205,18 +210,34 @@ export default function AdminTalleresPage() {
     };
 
     const handleMarkPaid = async (regId: string) => {
-        if (!confirm('¿Marcar como pagado?')) return;
-        const { error } = await supabase.from('workshop_registrations').update({ status: 'pagado' }).eq('id', regId);
-        if (!error) {
+        if (!confirm('¿Confirmas que recibiste el pago para este cupo? Se enviará un correo al cliente.')) return;
+        setLoadingRegs(true);
+        const response = await fetch('/api/admin/registrations/status', {
+            method: 'POST',
+            body: JSON.stringify({ regId, action: 'pagado' })
+        });
+        setLoadingRegs(false);
+        if (response.ok) {
             setRegistrations(registrations.map(r => r.id === regId ? { ...r, status: 'pagado' } : r));
+            alert('Pago confirmado y correo enviado.');
+        } else {
+            alert('Error confirmando pago');
         }
     };
 
     const handleDeleteRegistration = async (regId: string) => {
-        if (!confirm('¿Estás seguro de eliminar este registro? Esto liberará el cupo.')) return;
-        const { error } = await supabase.from('workshop_registrations').delete().eq('id', regId);
-        if (!error) {
+        if (!confirm('¿Estás seguro de cancelar este cupo por falta de pago? Se enviará un correo notificando al cliente.')) return;
+        setLoadingRegs(true);
+        const response = await fetch('/api/admin/registrations/status', {
+            method: 'POST',
+            body: JSON.stringify({ regId, action: 'rechazado' })
+        });
+        setLoadingRegs(false);
+        if (response.ok) {
             setRegistrations(registrations.filter(r => r.id !== regId));
+            alert('Cupo eliminado y correo enviado.');
+        } else {
+            alert('Error eliminando cupo');
         }
     };
 
@@ -320,6 +341,13 @@ export default function AdminTalleresPage() {
                             </select>
                         </div>
                         
+                        {formData.payment_mode === 'sitio' && (
+                            <div className="flex flex-col gap-2 md:col-span-2">
+                                <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Datos Bancarios del Profesor</label>
+                                <textarea value={formData.bank_details} onChange={e => setFormData({...formData, bank_details: e.target.value})} rows={3} placeholder="Menciona: Nombre, Banco, Cuenta, RUT, Correo..." className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"></textarea>
+                            </div>
+                        )}
+                        
                         <div className="md:col-span-2 flex justify-end">
                             <button disabled={uploadingImage} type="submit" className="bg-[#8B5E3C] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md text-center w-full md:w-auto disabled:opacity-50">
                                 {uploadingImage ? 'Subiendo y Guardando...' : (editId ? 'Guardar Cambios' : 'Crear Taller')}
@@ -389,13 +417,16 @@ export default function AdminTalleresPage() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {registrations.map(r => (
+                                            {registrations.map(r => {
+                                                const rawPhone = r.student_phone.replace(/\D/g, '');
+                                                const waLink = `https://wa.me/${rawPhone}?text=${encodeURIComponent(textToAdmin)}`;
+                                                return (
                                                 <tr key={r.id} className="border-t border-[#EACCA4]/30 hover:bg-white/50">
                                                     <td className="px-4 py-3 font-medium">{r.student_name} {r.student_surname}</td>
                                                     <td className="px-4 py-3 text-xs">{r.student_email}</td>
                                                     <td className="px-4 py-3">
-                                                        <a href={`https://wa.me/${r.student_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
-                                                            {r.student_phone}
+                                                        <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline flex items-center gap-1 font-semibold" title="Enviar Datos de Pago vía WhatsApp">
+                                                            {r.student_phone} (Chat)
                                                         </a>
                                                     </td>
                                                     <td className="px-4 py-3">
@@ -410,12 +441,12 @@ export default function AdminTalleresPage() {
                                                     </td>
                                                     <td className="px-4 py-3 flex gap-2">
                                                         {r.status !== 'pagado' && (
-                                                            <button onClick={() => handleMarkPaid(r.id)} className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs shadow-sm">PAGAR</button>
+                                                            <button disabled={loadingRegs} onClick={() => handleMarkPaid(r.id)} className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs shadow-sm disabled:opacity-50">PAGAR</button>
                                                         )}
-                                                        <button onClick={() => handleDeleteRegistration(r.id)} className="bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 text-xs shadow-sm">ELIMINAR</button>
+                                                        <button disabled={loadingRegs} onClick={() => handleDeleteRegistration(r.id)} className="bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 text-xs shadow-sm disabled:opacity-50">ELIMINAR</button>
                                                     </td>
                                                 </tr>
-                                            ))}
+                                            )})}
                                         </tbody>
                                     </table>
                                 </div>
@@ -432,11 +463,14 @@ export default function AdminTalleresPage() {
 function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handleUpdateStatus, handleOpenRegistrations }: { t: Taller, handleDelete: (id: string, title: string) => void, handleEdit: (t: Taller) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void, handleOpenRegistrations: (id: string, title: string) => void }) {
     
     // Extractor del JSON si se usó la nueva forma
-    let summaryText = t.description;
+    let bank_details = '';
     try {
         const parsed = JSON.parse(t.description);
         if (parsed.short) summaryText = parsed.short;
+        if (parsed.bank_details) bank_details = parsed.bank_details;
     } catch {}
+
+    const textToAdmin = `¡Hola! Vimos tu pre-inscripción al taller "${t.title}".\n\nTe recordamos que para asegurar tu cupo debes realizar el pago en las próximas horas.\n\nAquí tienes los datos para la transferencia del profesor:\n${bank_details}\n\nPor favor, envíanos el comprobante por este medio respondiendo a este mensaje para confirmar tu lugar. ¡Muchas gracias!`;
 
     return (
         <div className="bg-white rounded-[2rem] shadow-sm border border-[#EACCA4]/30 flex flex-col items-start overflow-hidden hover:shadow-lg transition-all relative h-full">
