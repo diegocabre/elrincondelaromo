@@ -30,6 +30,7 @@ export default function AdminTalleresPage() {
     const [uploadingImage, setUploadingImage] = useState(false);
     const [galleryModal, setGalleryModal] = useState<string | null>(null);
     
+    const [editId, setEditId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         title: '',
         category: '',
@@ -37,7 +38,8 @@ export default function AdminTalleresPage() {
         full_description: '', // Descripción completa
         price: '',
         date_info: '',
-        status: 'activo'
+        status: 'activo',
+        payment_mode: 'mercadopago'
     });
     const [tempDate, setTempDate] = useState({ day: '', start: '', end: '' });
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -101,31 +103,75 @@ export default function AdminTalleresPage() {
         
         const combinedDescription = JSON.stringify({
             short: formData.description,
-            full: formData.full_description || formData.description
+            full: formData.full_description || formData.description,
+            payment: formData.payment_mode
         });
 
-        const { error } = await supabase.from('workshops').insert([{
-            title: formData.title,
-            category: formData.category,
-            description: combinedDescription,
-            price: priceNum,
-            date_info: formData.date_info,
-            image_url: imageUrl,
-            status: formData.status
-        }]);
+        let dbError;
+        if (editId) {
+            const payload: any = {
+                title: formData.title,
+                category: formData.category,
+                description: combinedDescription,
+                price: priceNum,
+                date_info: formData.date_info,
+                status: formData.status
+            };
+            if (imageUrl) payload.image_url = imageUrl;
+            const { error: updateError } = await supabase.from('workshops').update(payload).eq('id', editId);
+            dbError = updateError;
+        } else {
+            const { error: insertError } = await supabase.from('workshops').insert([{
+                title: formData.title,
+                category: formData.category,
+                description: combinedDescription,
+                price: priceNum,
+                date_info: formData.date_info,
+                image_url: imageUrl,
+                status: formData.status
+            }]);
+            dbError = insertError;
+        }
 
         setUploadingImage(false);
 
-        if (!error) {
-            alert('Taller creado con éxito');
-            setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo' });
+        if (!dbError) {
+            alert(editId ? 'Taller actualizado con éxito' : 'Taller creado con éxito');
+            setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo', payment_mode: 'mercadopago' });
             setTempDate({ day: '', start: '', end: '' });
             setImageFile(null);
+            setEditId(null);
             setIsFormOpen(false);
             fetchTalleres();
         } else {
-            alert('Error creando taller: ' + error.message);
+            alert('Error guardando taller: ' + dbError.message);
         }
+    };
+
+    const handleEdit = (t: Taller) => {
+        let short = t.description;
+        let full = t.description;
+        let payment_mode = 'mercadopago';
+        try {
+            const parsed = JSON.parse(t.description);
+            if (parsed.short) short = parsed.short;
+            if (parsed.full) full = parsed.full;
+            if (parsed.payment) payment_mode = parsed.payment;
+        } catch {}
+        
+        setFormData({
+            title: t.title,
+            category: t.category,
+            description: short,
+            full_description: full,
+            price: t.price.toString(),
+            date_info: t.date_info,
+            status: t.status,
+            payment_mode: payment_mode
+        });
+        setEditId(t.id);
+        setIsFormOpen(true);
+        window.scrollTo(0,0);
     };
 
     const handleDelete = async (id: string, title: string) => {
@@ -153,7 +199,13 @@ export default function AdminTalleresPage() {
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-[#4A3B32]">Gestión de Talleres</h1>
                 <button 
-                    onClick={() => setIsFormOpen(!isFormOpen)}
+                    onClick={() => {
+                        setIsFormOpen(!isFormOpen);
+                        if(isFormOpen) {
+                             setEditId(null);
+                             setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo', payment_mode: 'mercadopago' });
+                        }
+                    }}
                     className="bg-[#8B5E3C] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md flex items-center gap-2"
                 >
                     {isFormOpen ? <X className="w-5 h-5"/> : <Plus className="w-5 h-5"/>}
@@ -164,7 +216,7 @@ export default function AdminTalleresPage() {
             {/* Formulario de Creación */}
             {isFormOpen && (
                 <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-[#EACCA4]/30">
-                    <h2 className="text-xl font-bold text-[#4A3B32] mb-6">Crear Nuevo Taller</h2>
+                    <h2 className="text-xl font-bold text-[#4A3B32] mb-6">{editId ? 'Editar Taller' : 'Crear Nuevo Taller'}</h2>
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Título del Taller</label>
@@ -224,17 +276,16 @@ export default function AdminTalleresPage() {
                         </div>
                         
                         <div className="flex flex-col gap-2">
-                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Estado del Taller</label>
-                            <select required value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]">
-                                <option value="activo">Activo (En Venta)</option>
-                                <option value="lleno">Agotado (Lleno)</option>
-                                <option value="realizado">Realizado (Galería)</option>
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Tipo de Pago</label>
+                            <select required value={formData.payment_mode} onChange={e => setFormData({...formData, payment_mode: e.target.value})} className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]">
+                                <option value="mercadopago">Mercado Pago (Online)</option>
+                                <option value="sitio">Pago en el Sitio (Físico al Profesor)</option>
                             </select>
                         </div>
                         
                         <div className="md:col-span-2 flex justify-end">
                             <button disabled={uploadingImage} type="submit" className="bg-[#8B5E3C] text-white px-8 py-3 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md text-center w-full md:w-auto disabled:opacity-50">
-                                {uploadingImage ? 'Subiendo y Guardando...' : 'Guardar Taller'}
+                                {uploadingImage ? 'Subiendo y Guardando...' : (editId ? 'Guardar Cambios' : 'Crear Taller')}
                             </button>
                         </div>
                     </form>
@@ -249,7 +300,7 @@ export default function AdminTalleresPage() {
                         {talleres.filter(t => t.status !== 'realizado').length === 0 ? (
                             <p className="text-[#6B5A4E]">No hay talleres activos en venta.</p>
                         ) : (
-                            talleres.filter(t => t.status !== 'realizado').map(t => <WorkshopAdminCard key={t.id} t={t} handleDelete={handleDelete} setGalleryModal={setGalleryModal} handleUpdateStatus={handleUpdateStatus} />)
+                            talleres.filter(t => t.status !== 'realizado').map(t => <WorkshopAdminCard key={t.id} t={t} handleDelete={handleDelete} handleEdit={handleEdit} setGalleryModal={setGalleryModal} handleUpdateStatus={handleUpdateStatus} />)
                         )}
                     </div>
                 </div>
@@ -260,7 +311,7 @@ export default function AdminTalleresPage() {
                         {talleres.filter(t => t.status === 'realizado').length === 0 ? (
                             <p className="text-[#6B5A4E]">Aún no has movido talleres al estado Realizado.</p>
                         ) : (
-                            talleres.filter(t => t.status === 'realizado').map(t => <WorkshopAdminCard key={t.id} t={t} handleDelete={handleDelete} setGalleryModal={setGalleryModal} handleUpdateStatus={handleUpdateStatus} />)
+                            talleres.filter(t => t.status === 'realizado').map(t => <WorkshopAdminCard key={t.id} t={t} handleDelete={handleDelete} handleEdit={handleEdit} setGalleryModal={setGalleryModal} handleUpdateStatus={handleUpdateStatus} />)
                         )}
                     </div>
                 </div>
@@ -278,7 +329,7 @@ export default function AdminTalleresPage() {
 }
 
 // Componente Tarjeta Taller Administrador
-function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatus }: { t: Taller, handleDelete: (id: string, title: string) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void }) {
+function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handleUpdateStatus }: { t: Taller, handleDelete: (id: string, title: string) => void, handleEdit: (t: Taller) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void }) {
     
     // Extractor del JSON si se usó la nueva forma
     let summaryText = t.description;
@@ -329,6 +380,9 @@ function WorkshopAdminCard({ t, handleDelete, setGalleryModal, handleUpdateStatu
                             Finalizar
                         </button>
                     )}
+                    <button onClick={() => handleEdit(t)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
+                         Editar
+                    </button>
                     {t.status === 'realizado' && (
                         <button onClick={() => setGalleryModal(t.id)} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#8B5E3C] text-white hover:bg-[#6D492E] transition-colors font-semibold text-xs uppercase tracking-wide">
                             <ImageIcon className="w-4 h-4" /> Fotos

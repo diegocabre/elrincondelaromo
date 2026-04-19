@@ -55,45 +55,40 @@ export default function AdminAgendaPage() {
 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        const template = {
-            1: [ // Lunes
-              { kw: 'yoga', time: '08:10' },
-              { kw: 'pilates', time: '11:15' },
-              { kw: 'yoga', time: '19:00' }
-            ],
-            2: [ // Martes
-              { kw: 'yoga', time: '09:00' },
-              { kw: 'ingl', time: '15:00' },
-              { kw: 'ingl', time: '16:00' },
-              { kw: 'ingl', time: '17:00' },
-              { kw: 'pilates', time: '18:15' }
-            ],
-            3: [ // Miércoles
-              { kw: 'yoga', time: '08:10' },
-              { kw: 'yoga', time: '19:00' }
-            ],
-            4: [ // Jueves
-              { kw: 'ingl', time: '15:00' },
-              { kw: 'ingl', time: '16:00' },
-              { kw: 'ingl', time: '17:00' },
-              { kw: 'pilates', time: '18:15' },
-              { kw: 'yoga', time: '19:30' }
-            ],
-            5: [ // Viernes
-              { kw: 'pilates', time: '11:15' }
-            ],
-            6: [ // Sábado
-              { kw: 'zumba', time: '10:00' }
-            ]
+        const { data: generalSchedules, error: schError } = await supabase.from('general_schedules').select('*');
+        if (schError || !generalSchedules) {
+            alert("Error al cargar configuración de Horarios Generales");
+            setIsGenerating(false);
+            return;
+        }
+
+        const template: Record<number, {kw: string, time: string}[]> = {};
+        
+        // Mapeo inverso de días de la semana
+        const daysMap: Record<string, number> = {
+            "lun": 1, "mar": 2, "mie": 3, "jue": 4, "vie": 5, "sab": 6, "dom": 0
         };
+
+        for (const sch of generalSchedules) {
+            const daysP = sch.day_names.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            const daysArr = Object.keys(daysMap).filter(d => daysP.includes(d));
+
+            for (const d of daysArr) {
+                const mapId = daysMap[d];
+                if (!template[mapId]) template[mapId] = [];
+                template[mapId].push({ kw: sch.class_name, time: sch.time });
+            }
+        }
 
         const rowsToInsert = [];
 
-        const findTherapyId = (keyword: string) => {
-             // normalize string to remove accents
+        const findTherapyId = (cName: string) => {
              const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-             const cleanKw = normalize(keyword);
-             const found = therapies.find(t => normalize(t.title).includes(cleanKw));
+             const cleanClass = normalize(cName);
+             const found = therapies.find(t => {
+                 const cleanTherapy = normalize(t.title);
+                 return cleanClass.includes(cleanTherapy) || cleanTherapy.includes(cleanClass);
+             });
              return found ? found.id : null;
         };
 
@@ -101,7 +96,7 @@ export default function AdminAgendaPage() {
              const d = new Date(year, month, day);
              const dayOfWeek = d.getDay(); 
 
-             const dailyClasses = template[dayOfWeek as keyof typeof template];
+             const dailyClasses = template[dayOfWeek];
              if (dailyClasses) {
                  for (const c of dailyClasses) {
                      const tId = findTherapyId(c.kw);
@@ -119,7 +114,7 @@ export default function AdminAgendaPage() {
         }
 
         if (rowsToInsert.length === 0) {
-            alert('No se generó nada. Asegúrate de tener Terapias creadas que en su título digan "Yoga", "Pilates", "Inglés" o "Zumba".');
+            alert('No se generó nada. Asegúrate de que las Clases en Horarios Generales coincidan (o incluyan) en su nombre el Título de alguna de tus Terapias creadas y que hayas definido horarios en Configuración Base.');
             setIsGenerating(false);
             return;
         }

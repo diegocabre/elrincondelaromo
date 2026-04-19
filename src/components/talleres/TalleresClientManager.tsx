@@ -83,6 +83,40 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
   }, [searchParams, router]);
 
   const handleCheckout = async (taller: Taller, payer: PayerData) => {
+    let paymentMode = 'mercadopago';
+    try {
+        const parsed = JSON.parse(taller.description);
+        if (parsed.payment) paymentMode = parsed.payment;
+    } catch {}
+
+    if (paymentMode === 'sitio') {
+        setIsConfirming(true);
+        setPaymentSuccessPopup(true);
+        try {
+            const response = await fetch('/api/register-onsite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item: taller, payer })
+            });
+            const data = await response.json();
+            if (data.success) {
+                setIsConfirming(false);
+                setDetailModal(null);
+                // No redirigimos ni limpiamos URL ya que ya mostramos el success y recargará pronto.
+            } else {
+                alert('Hubo un problema con la inscripción: ' + (data.error || ''));
+                setPaymentSuccessPopup(false);
+                setIsConfirming(false);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error de conexión');
+            setPaymentSuccessPopup(false);
+            setIsConfirming(false);
+        }
+        return;
+    }
+
     try {
         const response = await fetch('/api/checkout', {
             method: 'POST',
@@ -219,7 +253,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 mx-auto text-green-600">
                             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <h2 className="text-3xl font-bold text-[#4A3B32] mb-3">¡Pago Exitoso!</h2>
+                        <h2 className="text-3xl font-bold text-[#4A3B32] mb-3">¡Inscripción Exitosa!</h2>
                         <p className="text-[#6B5A4E] mb-6">Tu inscripción ha sido confirmada y tu cupo reservado. Te enviamos un correo electrónico detallado con toda la información.</p>
                         <button
                         onClick={() => setPaymentSuccessPopup(false)}
@@ -256,9 +290,11 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     let fullText = taller.description;
+    let paymentMode = 'mercadopago';
     try {
         const parsed = JSON.parse(taller.description);
         if (parsed.full) fullText = parsed.full;
+        if (parsed.payment) paymentMode = parsed.payment;
     } catch {}
 
     const isRealizado = taller.status === 'realizado';
@@ -367,7 +403,7 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
                                     ← Volver
                                 </button>
                                 <button type="submit" disabled={isSubmitting} className="px-8 py-4 bg-[#212121] hover:bg-[#000000] text-white rounded-xl font-bold shadow-lg w-full md:w-auto text-lg disabled:opacity-70 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2">
-                                    {isSubmitting ? 'PROCESANDO...' : `PAGAR $${Number(taller.price).toLocaleString('es-CL')}`}
+                                    {isSubmitting ? 'PROCESANDO...' : (paymentMode === 'sitio' ? 'AGENDAR (PAGO EN SITIO)' : `PAGAR $${Number(taller.price).toLocaleString('es-CL')}`)}
                                 </button>
                             </div>
                         </form>
