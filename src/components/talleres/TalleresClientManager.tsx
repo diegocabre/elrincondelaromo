@@ -394,8 +394,8 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-[#6B5A4E] mb-1">Teléfono</label>
-                                <input type="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full p-3 rounded-lg border border-[#EACCA4] bg-white text-[#4A3B32] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]" placeholder="+56912345678" />
+                                <label className="block text-sm font-medium text-[#6B5A4E] mb-1">WhatsApp (Para coordinar pago)</label>
+                                <input type="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full p-3 rounded-lg border border-[#EACCA4] bg-white text-[#4A3B32] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]" placeholder="+56 9 1234 5678" />
                             </div>
 
                             <div className="flex flex-col md:flex-row items-center justify-between mt-6 pt-6 border-t border-[#EACCA4]/30 gap-4">

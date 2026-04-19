@@ -22,6 +22,16 @@ interface Photo {
     workshop_id: string;
 }
 
+interface Registration {
+    id: string;
+    student_name: string;
+    student_surname: string;
+    student_email: string;
+    student_phone: string;
+    status: string;
+    created_at: string;
+}
+
 export default function AdminTalleresPage() {
     const [talleres, setTalleres] = useState<Taller[]>([]);
     const [loading, setLoading] = useState(true);
@@ -29,6 +39,9 @@ export default function AdminTalleresPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [galleryModal, setGalleryModal] = useState<string | null>(null);
+    const [registrationsModal, setRegistrationsModal] = useState<{id: string, title: string} | null>(null);
+    const [registrations, setRegistrations] = useState<Registration[]>([]);
+    const [loadingRegs, setLoadingRegs] = useState(false);
     
     const [editId, setEditId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
@@ -183,6 +196,30 @@ export default function AdminTalleresPage() {
         }
     };
 
+    const handleOpenRegistrations = async (id: string, title: string) => {
+        setRegistrationsModal({id, title});
+        setLoadingRegs(true);
+        const { data } = await supabase.from('workshop_registrations').select('*').eq('workshop_id', id).order('created_at', { ascending: false });
+        setRegistrations(data || []);
+        setLoadingRegs(false);
+    };
+
+    const handleMarkPaid = async (regId: string) => {
+        if (!confirm('¿Marcar como pagado?')) return;
+        const { error } = await supabase.from('workshop_registrations').update({ status: 'pagado' }).eq('id', regId);
+        if (!error) {
+            setRegistrations(registrations.map(r => r.id === regId ? { ...r, status: 'pagado' } : r));
+        }
+    };
+
+    const handleDeleteRegistration = async (regId: string) => {
+        if (!confirm('¿Estás seguro de eliminar este registro? Esto liberará el cupo.')) return;
+        const { error } = await supabase.from('workshop_registrations').delete().eq('id', regId);
+        if (!error) {
+            setRegistrations(registrations.filter(r => r.id !== regId));
+        }
+    };
+
     if (loading) return <div className="text-center py-20 text-[#8B5E3C] font-semibold">Cargando Talleres...</div>;
 
     const handleUpdateStatus = async (id: string, newStatus: string) => {
@@ -300,7 +337,7 @@ export default function AdminTalleresPage() {
                         {talleres.filter(t => t.status !== 'realizado').length === 0 ? (
                             <p className="text-[#6B5A4E]">No hay talleres activos en venta.</p>
                         ) : (
-                            talleres.filter(t => t.status !== 'realizado').map(t => <WorkshopAdminCard key={t.id} t={t} handleDelete={handleDelete} handleEdit={handleEdit} setGalleryModal={setGalleryModal} handleUpdateStatus={handleUpdateStatus} />)
+                            talleres.filter(t => t.status !== 'realizado').map(t => <WorkshopAdminCard key={t.id} t={t} handleDelete={handleDelete} handleEdit={handleEdit} setGalleryModal={setGalleryModal} handleUpdateStatus={handleUpdateStatus} handleOpenRegistrations={handleOpenRegistrations} />)
                         )}
                     </div>
                 </div>
@@ -311,7 +348,7 @@ export default function AdminTalleresPage() {
                         {talleres.filter(t => t.status === 'realizado').length === 0 ? (
                             <p className="text-[#6B5A4E]">Aún no has movido talleres al estado Realizado.</p>
                         ) : (
-                            talleres.filter(t => t.status === 'realizado').map(t => <WorkshopAdminCard key={t.id} t={t} handleDelete={handleDelete} handleEdit={handleEdit} setGalleryModal={setGalleryModal} handleUpdateStatus={handleUpdateStatus} />)
+                            talleres.filter(t => t.status === 'realizado').map(t => <WorkshopAdminCard key={t.id} t={t} handleDelete={handleDelete} handleEdit={handleEdit} setGalleryModal={setGalleryModal} handleUpdateStatus={handleUpdateStatus} handleOpenRegistrations={handleOpenRegistrations} />)
                         )}
                     </div>
                 </div>
@@ -324,12 +361,75 @@ export default function AdminTalleresPage() {
                     onClose={() => setGalleryModal(null)} 
                 />
             )}
+
+            {registrationsModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[#FDFCF8] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl">
+                        <div className="p-6 border-b border-[#EACCA4] flex justify-between items-center bg-white rounded-t-2xl">
+                            <h2 className="text-xl font-bold text-[#4A3B32]">Inscritos: {registrationsModal.title}</h2>
+                            <button onClick={() => setRegistrationsModal(null)} className="text-[#8B5E3C] hover:text-[#4A3B32]">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1">
+                            {loadingRegs ? (
+                                <p className="text-center text-[#8B5E3C] font-semibold py-10">Cargando inscripciones...</p>
+                            ) : registrations.length === 0 ? (
+                                <p className="text-center text-[#6B5A4E] py-10">No hay inscripciones para este taller.</p>
+                            ) : (
+                                <div className="overflow-x-auto rounded-xl border border-[#EACCA4]/30">
+                                    <table className="w-full text-left text-sm text-[#4A3B32]">
+                                        <thead className="bg-[#FAEDDF] text-[#8B5E3C] font-semibold">
+                                            <tr>
+                                                <th className="px-4 py-3">Nombre</th>
+                                                <th className="px-4 py-3">Email</th>
+                                                <th className="px-4 py-3">WhatsApp</th>
+                                                <th className="px-4 py-3">Estado</th>
+                                                <th className="px-4 py-3">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {registrations.map(r => (
+                                                <tr key={r.id} className="border-t border-[#EACCA4]/30 hover:bg-white/50">
+                                                    <td className="px-4 py-3 font-medium">{r.student_name} {r.student_surname}</td>
+                                                    <td className="px-4 py-3 text-xs">{r.student_email}</td>
+                                                    <td className="px-4 py-3">
+                                                        <a href={`https://wa.me/${r.student_phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
+                                                            {r.student_phone}
+                                                        </a>
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                                            r.status === 'pagado' ? 'bg-green-100 text-green-800' :
+                                                            r.status === 'confirmado' ? 'bg-blue-100 text-blue-800' :
+                                                            r.status === 'pendiente_pago' || r.status === 'pendiente' ? 'bg-orange-100 text-orange-800' :
+                                                            'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                            {r.status.toUpperCase()}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 flex gap-2">
+                                                        {r.status !== 'pagado' && (
+                                                            <button onClick={() => handleMarkPaid(r.id)} className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 text-xs shadow-sm">PAGAR</button>
+                                                        )}
+                                                        <button onClick={() => handleDeleteRegistration(r.id)} className="bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 text-xs shadow-sm">ELIMINAR</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 // Componente Tarjeta Taller Administrador
-function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handleUpdateStatus }: { t: Taller, handleDelete: (id: string, title: string) => void, handleEdit: (t: Taller) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void }) {
+function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handleUpdateStatus, handleOpenRegistrations }: { t: Taller, handleDelete: (id: string, title: string) => void, handleEdit: (t: Taller) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void, handleOpenRegistrations: (id: string, title: string) => void }) {
     
     // Extractor del JSON si se usó la nueva forma
     let summaryText = t.description;
@@ -382,6 +482,9 @@ function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handl
                     )}
                     <button onClick={() => handleEdit(t)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
                          Editar
+                    </button>
+                    <button onClick={() => handleOpenRegistrations(t.id, t.title)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
+                        Inscritos
                     </button>
                     {t.status === 'realizado' && (
                         <button onClick={() => setGalleryModal(t.id)} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#8B5E3C] text-white hover:bg-[#6D492E] transition-colors font-semibold text-xs uppercase tracking-wide">
