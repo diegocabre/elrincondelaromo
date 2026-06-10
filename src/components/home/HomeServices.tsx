@@ -25,13 +25,13 @@ export default function HomeServices() {
       >
         {/* Left Column - Texto y Viñetas */}
         <motion.div variants={fadeUp} className="flex flex-col">
-          <span className="text-[#8B5E3C] font-semibold tracking-[0.2em] uppercase text-sm mb-4">
+          <span className="text-[#dfa445] font-semibold tracking-[0.2em] uppercase text-sm mb-4">
             Nuestro Enfoque
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-[#4A3B32] mb-6 leading-tight">
             ¿Qué hacemos en <br /> Rincón del Aromo?
           </h2>
-          <div className="w-16 h-1 bg-[#D4A373] mb-8 rounded-full" />
+          <div className="w-16 h-1 bg-[#dfa445] mb-8 rounded-full" />
 
           <p className="text-lg text-[#6B5A4E] font-medium mb-6">
             En Rincón del Aromo promovemos el bienestar familiar con espacios
@@ -50,7 +50,7 @@ export default function HomeServices() {
                 variants={fadeUp}
                 className="flex items-start gap-3"
               >
-                <div className="mt-1 bg-[#FAEDDF] text-[#8B5E3C] rounded-full p-1">
+                <div className="mt-1 bg-[#FAEDDF] text-[#dfa445] rounded-full p-1">
                   <CheckCircle2 size={18} strokeWidth={2.5} />
                 </div>
                 <span className="text-lg text-[#4A3B32] font-medium leading-relaxed">

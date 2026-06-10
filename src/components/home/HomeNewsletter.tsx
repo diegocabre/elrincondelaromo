@@ -23,7 +23,7 @@ export default function HomeNewsletter() {
             Suscríbete para recibir noticias de nuevos talleres, promociones en
             coworking y tips de bienestar.
           </p>
-          <form className="flex flex-col sm:flex-row gap-0 shadow-lg rounded-full overflow-hidden border border-[#EACCA4]" onSubmit={(e) => { e.preventDefault(); alert("¡Te has suscrito exitosamente!"); }}>
+          <form className="flex flex-col sm:flex-row gap-0 shadow-lg rounded-full overflow-hidden border border-[#dfa445]/50" onSubmit={(e) => { e.preventDefault(); alert("¡Te has suscrito exitosamente!"); }}>
             <input
               type="email"
               placeholder="tu@correo.com"
@@ -32,7 +32,7 @@ export default function HomeNewsletter() {
             />
             <button
               type="submit"
-              className="bg-[#8B5E3C] text-white px-8 py-4 font-semibold hover:bg-[#6D492E] transition-colors"
+              className="bg-[#dfa445] text-white px-8 py-4 font-semibold hover:bg-[#c99136] transition-colors"
             >
               Suscribirme
             </button>

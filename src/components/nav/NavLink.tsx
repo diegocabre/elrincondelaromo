@@ -9,11 +9,32 @@ interface NavLinkProps {
     children: React.ReactNode;
     onClick?: () => void;
     className?: string;
+    activeClassName?: string;
+    ignoreDefaultActiveStyles?: boolean;
 }
 
-export const NavLink = ({ href, children, onClick, className = "" }: NavLinkProps) => {
+export const NavLink = ({ 
+    href, 
+    children, 
+    onClick, 
+    className = "", 
+    activeClassName = "",
+    ignoreDefaultActiveStyles = false 
+}: NavLinkProps) => {
     const pathname = usePathname();
     const isActive = pathname === href;
+
+    if (ignoreDefaultActiveStyles) {
+        return (
+            <Link
+                href={href}
+                onClick={onClick}
+                className={`transition-all duration-200 ${className} ${isActive ? activeClassName : ""}`}
+            >
+                {children}
+            </Link>
+        );
+    }
 
     return (
         <Link

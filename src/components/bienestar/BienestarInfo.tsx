@@ -3,7 +3,8 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Clock, Tag, Users, CheckCircle2, UserCircle2 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
+import { UserCircle2 } from 'lucide-react';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -50,164 +51,182 @@ interface BienestarInfoProps {
 const formatPrice = (priceStr: string) => {
     const num = parseInt(priceStr.replace(/\D/g, ''), 10);
     if (!isNaN(num)) {
-        return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(num);
+        return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(num);
     }
     return priceStr;
 };
 
+const formatDayName = (dayStr: string) => {
+    const mapping: { [key: string]: string } = {
+        'mar': 'MARTES',
+        'mié': 'MIÉRCOLES',
+        'lun': 'LUNES',
+        'jue': 'JUEVES',
+        'vie': 'VIERNES',
+        'sáb': 'SÁBADO',
+        'dom': 'DOMINGO',
+        'lun y vie': 'LUNES Y VIERNES',
+        'mar y jue': 'MARTES Y JUEVES',
+    };
+    const key = dayStr.toLowerCase().trim();
+    return mapping[key] || dayStr.toUpperCase();
+};
+
 export default function BienestarInfo({ therapies, instructors = [], schedules = [], prices = [] }: BienestarInfoProps) {
+    
+    // Función para obtener horarios asociados a una instructora o su clase
+    const getInstructorSchedules = (instName: string, instTitle: string) => {
+        return schedules.filter(s => {
+            const className = s.class_name.toLowerCase();
+            const firstName = instName.split(' ')[0].toLowerCase();
+            const titleL = instTitle.toLowerCase();
+            
+            return className.includes(firstName) || 
+                   className.includes(titleL) || 
+                   (firstName === 'waleska' && className.includes('yoga')) ||
+                   (firstName === 'carito' && (className.includes('pilates') || className.includes('zumba'))) ||
+                   (firstName === 'tania' && className.includes('inglés'));
+        });
+    };
+
+    // Agrupamos instructores para renderizar sus tarjetas correspondientes
+    // Aseguramos que muestre los instructores activos
+    const activeInstructors = instructors.length > 0 ? instructors : [
+        { id: 'eaee53c8-3b34-49f4-a135-7cf57ee258d0', name: 'Waleska Barrientos', title: 'Yoga Kundalini' },
+        { id: '07755768-6276-43e2-820f-7009ae4a3f1e', name: 'Carito', title: 'Pilates / Zumba' },
+        { id: '0f5a95f5-0dfd-4b42-afc4-5c240bdbcf7e', name: 'Tania Talki Talk', title: 'Inglés' }
+    ];
+
     return (
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} className="w-full flex flex-col pb-10">
-            <span className="text-[#8B5E3C] font-semibold tracking-widest uppercase text-sm mb-4 block">Salud & Mente</span>
-            <h1 className="text-4xl md:text-5xl font-bold text-[#4A3B32] leading-tight mb-6">
-                Movimiento y Bienestar
-            </h1>
-            <p className="text-lg text-[#6B5A4E] font-light leading-relaxed mb-4">
-                Un espacio para reconectar contigo, moverte y sentirte bien.
-            </p>
-            <p className="text-md text-[#8B5E3C] font-medium leading-relaxed mb-10">
-                Elige la clase que más te acomode, revisa nuestros horarios fijos y reserva tu cupo en el formulario.
-            </p>
-
-            {/* SECCIÓN HORARIOS FIJOS */}
-            <div className="mb-12">
-                <h2 className="text-2xl font-bold text-[#4A3B32] mb-6 flex items-center gap-2 border-b border-[#EACCA4] pb-2">
-                    <Clock className="text-[#8B5E3C]" /> Horarios Generales
+        <motion.div 
+            initial="hidden" 
+            animate="visible" 
+            variants={fadeUp} 
+            className="w-full flex flex-col items-center pb-10"
+        >
+            {/* Header de la Página */}
+            <div className="text-center max-w-3xl mb-16">
+                <span className="text-[#dfa445] font-semibold tracking-widest uppercase text-sm mb-4 block">Salud & Mente</span>
+                <h1 className="text-4xl md:text-6xl font-bold text-[#4A3B32] leading-tight mb-6">
+                    SERVICIOS & CLASES
+                </h1>
+                <h2 className="text-2xl font-semibold text-[#6e721b] mb-4">
+                    Movimiento y Bienestar
                 </h2>
-                
-                <div className="grid md:grid-cols-2 gap-6 relative">
-                    <div className="bg-[#FDFCF8] rounded-2xl p-6 border border-[#EACCA4]/50 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-[#FAEDDF] rounded-bl-full -z-0 opacity-50" />
-                        <h3 className="text-[#8B5E3C] font-bold text-lg mb-4 uppercase tracking-wide flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#8B5E3C]"></span> MAÑANA</h3>
-                        <ul className="space-y-3 text-sm text-[#6B5A4E]">
-                            {schedules.filter(s => s.period.toUpperCase() === 'MAÑANA').map(s => (
-                                <li key={s.id} className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2">
-                                    <span className="font-medium">{s.day_names}</span> 
-                                    <span>{s.class_name} <span className="font-bold text-[#4A3B32]">{s.time}</span></span>
-                                </li>
-                            ))}
-                            {schedules.filter(s => s.period.toUpperCase() === 'MAÑANA').length === 0 && (
-                                <li className="text-gray-400">Sin clases matutinas asignadas</li>
-                            )}
-                        </ul>
-                    </div>
-
-                    <div className="bg-[#FDFCF8] rounded-2xl p-6 border border-[#EACCA4]/50 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-[#FAEDDF] rounded-bl-full -z-0 opacity-50" />
-                        <h3 className="text-[#8B5E3C] font-bold text-lg mb-4 uppercase tracking-wide flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#8B5E3C]"></span> TARDE</h3>
-                        <ul className="space-y-3 text-sm text-[#6B5A4E]">
-                            {schedules.filter(s => s.period.toUpperCase() === 'TARDE').map(s => (
-                                <li key={s.id} className="flex justify-between border-b border-dashed border-[#EACCA4]/50 pb-2">
-                                    <span className="font-medium">{s.day_names}</span> 
-                                    <span>{s.class_name} <span className="font-bold text-[#4A3B32]">{s.time}</span></span>
-                                </li>
-                            ))}
-                            {schedules.filter(s => s.period.toUpperCase() === 'TARDE').length === 0 && (
-                                <li className="text-gray-400">Sin clases vespertinas asignadas</li>
-                            )}
-                        </ul>
-                    </div>
-                </div>
+                <p className="text-lg text-[#6B5A4E] font-light leading-relaxed mb-2">
+                    Un espacio para reconectar contigo, moverte y sentirte bien.
+                </p>
+                <p className="text-sm text-[#dfa445] font-medium leading-relaxed italic">
+                    Elige la clase que más te acomode, revisa nuestros horarios fijos y reserva tu cupo en el formulario.
+                </p>
             </div>
 
-            {/* SECCIÓN PRECIOS */}
-            <div className="mb-12">
-                <h2 className="text-2xl font-bold text-[#4A3B32] mb-6 flex items-center gap-2 border-b border-[#EACCA4] pb-2">
-                    <Tag className="text-[#8B5E3C]" /> Planes y Precios
-                </h2>
-                
-                <div className="grid sm:grid-cols-2 gap-4">
-                    {instructors.filter(inst => prices.some(p => p.instructor_id === inst.id)).length > 0 ? (
-                        instructors.filter(inst => prices.some(p => p.instructor_id === inst.id)).map(inst => (
-                            <div key={inst.id} className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
-                                <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2 flex items-center gap-2">
+            {/* Grilla de Tarjetas de Instructor (3 Columnas) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+                {activeInstructors.map((inst) => {
+                    const instPrices = prices.filter(p => p.instructor_id === inst.id);
+                    const instSchedules = getInstructorSchedules(inst.name, inst.title);
+                    
+                    // Definir tipo de clase principal para la tarjeta
+                    let classType = "Clase";
+                    if (inst.title.toLowerCase().includes("yoga")) classType = "Yoga";
+                    else if (inst.title.toLowerCase().includes("pilates")) classType = "Pilates";
+                    else if (inst.title.toLowerCase().includes("inglés")) classType = "Inglés";
+                    else if (inst.title.toLowerCase().includes("zumba")) classType = "Zumba";
+
+                    // Crear mensaje personalizado para WhatsApp
+                    const whatsappMsg = encodeURIComponent(`¡Hola! Me interesa tomar un cupo de tu clase de ${classType} con ${inst.name}.`);
+                    const whatsappLink = `https://wa.me/56987222243?text=${whatsappMsg}`;
+
+                    return (
+                        <div 
+                            key={inst.id} 
+                            className="bg-white rounded-[2rem] p-8 shadow-lg border border-[#dfa445]/10 flex flex-col justify-between items-center text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                        >
+                            {/* Cabecera de la Tarjeta (Perfil de Instructora) */}
+                            <div className="flex flex-col items-center w-full">
+                                <div className="relative w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-[#dfa445]/30">
                                     {inst.image_data ? (
-                                        <Image src={inst.image_data} alt={inst.name} width={32} height={32} className="w-8 h-8 rounded-full object-cover border border-[#EACCA4] shadow-sm shrink-0" unoptimized />
+                                        <Image 
+                                            src={inst.image_data} 
+                                            alt={inst.name} 
+                                            fill 
+                                            className="object-cover" 
+                                            unoptimized
+                                        />
                                     ) : (
-                                        <div className="w-8 h-8 bg-[#FAEDDF] rounded-full flex items-center justify-center text-[#8B5E3C] shrink-0">
-                                            <UserCircle2 size={20} strokeWidth={1.5} />
+                                        <div className="w-full h-full bg-[#FAEDDF] flex items-center justify-center text-[#dfa445]">
+                                            <UserCircle2 size={56} strokeWidth={1.5} />
                                         </div>
                                     )}
-                                    <div className="leading-tight">
-                                        <span className="block">{inst.name}</span>
-                                        <span className="text-xs text-[#8B5E3C] font-normal">{inst.title}</span>
-                                    </div>
-                                </h4>
-                                {Array.from(new Set(prices.filter(p => p.instructor_id === inst.id).map(p => p.category))).map(cat => (
-                                    <div key={cat} className="mb-4 last:mb-0">
-                                        <h5 className="font-bold text-[#6B5A4E] text-sm mb-2">{cat}</h5>
-                                        <ul className="text-sm text-[#6B5A4E] space-y-2">
-                                            {prices.filter(p => p.instructor_id === inst.id && p.category === cat).map(p => (
-                                                <li key={p.id} className="flex justify-between">
-                                                    <span>{p.description}</span>
-                                                    <span className="font-bold">{formatPrice(p.price)}</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-[#4A3B32]">{inst.name}</h3>
+                                <p className="text-xs text-[#dfa445] font-semibold tracking-wider uppercase mt-1 mb-4">{inst.title}</p>
+                                
+                                <div className="w-full h-px bg-[#dfa445]/20 my-4"></div>
+                                
+                                {/* Tipo de Clase */}
+                                <h4 className="text-lg font-bold text-[#6e721b] mb-4">{classType}</h4>
+                                
+                                {/* Horarios */}
+                                <div className="mb-6 w-full">
+                                    <h5 className="text-xs font-bold text-[#4A3B32]/70 tracking-widest uppercase mb-3">HORARIOS:</h5>
+                                    {instSchedules.length > 0 ? (
+                                        <ul className="space-y-2 text-sm text-[#6B5A4E] font-medium">
+                                            {instSchedules.map((s) => (
+                                                <li key={s.id} className="leading-relaxed">
+                                                    <span className="font-bold text-[#4A3B32]">{formatDayName(s.day_names)}</span>: {s.time} hrs
                                                 </li>
                                             ))}
                                         </ul>
-                                    </div>
-                                ))}
-                            </div>
-                        ))
-                    ) : (
-                        prices.length > 0 ? (
-                            Array.from(new Set(prices.map(p => p.category))).map(cat => (
-                                <div key={cat} className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/30 hover:border-[#8B5E3C]/50 transition-colors">
-                                    <h4 className="font-bold text-[#4A3B32] mb-3 border-b border-[#FAEDDF] pb-2">{cat}</h4>
-                                    <ul className="text-sm text-[#6B5A4E] space-y-2 mb-3">
-                                        {prices.filter(p => p.category === cat).map(p => (
-                                            <li key={p.id} className="flex justify-between">
-                                                <span>{p.description}</span>
-                                                <span className="font-bold">{formatPrice(p.price)}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    ) : (
+                                        <p className="text-xs text-[#6B5A4E]/60 italic">Horarios a convenir</p>
+                                    )}
                                 </div>
-                            ))
-                        ) : (
-                            <p className="text-gray-400 p-4">No hay precios configurados actualmente.</p>
-                        )
-                    )}
-                </div>
-            </div>
 
-            {/* SECCIÓN INSTRUCTORES */}
-            <div className="mb-12">
-                <h2 className="text-2xl font-bold text-[#4A3B32] mb-6 flex items-center gap-2 border-b border-[#EACCA4] pb-2">
-                    <Users className="text-[#8B5E3C]" /> Nuestros Instructores
-                </h2>
-                
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    {instructors.length > 0 ? (
-                        instructors.map((inst, idx) => (
-                            <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-[#EACCA4]/20 flex flex-col items-center text-center group hover:shadow-md transition-all">
-                                {inst.image_data ? (
-                                    <Image src={inst.image_data} alt={inst.name} width={64} height={64} className="w-16 h-16 rounded-full object-cover mb-3 border border-[#EACCA4] group-hover:scale-110 transition-transform shadow-sm" unoptimized />
-                                ) : (
-                                    <div className="w-16 h-16 bg-[#FAEDDF] rounded-full flex items-center justify-center mb-3 text-[#8B5E3C] group-hover:scale-110 transition-transform">
-                                        <UserCircle2 size={40} strokeWidth={1.5} />
-                                    </div>
-                                )}
-                                <h4 className="font-bold text-[#4A3B32] text-sm">{inst.name}</h4>
-                                <p className="text-xs text-[#8B5E3C] mt-1">{inst.title}</p>
+                                <div className="w-full h-px bg-[#dfa445]/20 my-4"></div>
+                                
+                                {/* Precios */}
+                                <div className="mb-6 w-full">
+                                    {instPrices.length > 0 ? (
+                                        <ul className="space-y-2 text-sm text-[#6B5A4E] font-medium">
+                                            {instPrices.map((p) => (
+                                                <li key={p.id} className="flex justify-between items-center px-4">
+                                                    <span className="font-light">{p.description}</span>
+                                                    <span className="font-bold text-[#4A3B32]">{formatPrice(p.price)}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-xs text-[#6B5A4E]/60 italic">Consultar valores</p>
+                                    )}
+                                </div>
                             </div>
-                        ))
-                    ) : (
-                        <p className="text-gray-400 p-4 col-span-full">No hay instructores registrados actualmente.</p>
-                    )}
-                </div>
-            </div>
 
-            {/* Terapias Dinámicas Originales */}
+                            {/* Botón WhatsApp de Contacto */}
+                            <a 
+                                href={whatsappLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-4 flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 px-6 rounded-full w-full font-bold hover:bg-[#128C7E] transition-all text-xs tracking-wider shadow-sm hover:shadow-md"
+                            >
+                                <FaWhatsapp className="text-lg" />
+                                <span>CONTACTATE CON LA INSTRUCTORA</span>
+                            </a>
+                        </div>
+                    );
+                })}
+            </div>
+            
+            {/* Terapias Adicionales / Servicios Holísticos (Opcional, de respaldo abajo) */}
             {therapies.length > 0 && (
-                <div className="mt-8 pt-8 border-t border-[#EACCA4]/50">
-                    <h2 className="text-xl font-bold text-[#4A3B32] mb-6 flex items-center gap-2">
-                        <CheckCircle2 className="text-[#8B5E3C]" /> Otros Servicios de Bienestar
-                    </h2>
-                    <div className="flex flex-col gap-4">
+                <div className="mt-20 pt-10 border-t border-[#dfa445]/20 w-full max-w-4xl text-center">
+                    <h3 className="text-2xl font-bold text-[#4A3B32] mb-8">Otros Servicios de Bienestar</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
                         {therapies.map((t) => (
-                            <div key={t.id} className="bg-white p-5 rounded-2xl shadow-sm border border-[#EACCA4]/20 flex flex-col hover:border-[#8B5E3C]/40 transition-colors">
-                                <h3 className="text-lg font-bold text-[#4A3B32] mb-1">{t.title}</h3>
-                                <p className="text-[#6B5A4E] text-sm leading-relaxed">{t.description}</p>
+                            <div key={t.id} className="bg-white p-6 rounded-2xl shadow-sm border border-[#dfa445]/10 flex flex-col text-left hover:border-[#6e721b]/30 transition-colors">
+                                <h4 className="text-lg font-bold text-[#6e721b] mb-2">{t.title}</h4>
+                                <p className="text-[#6B5A4E] text-sm leading-relaxed font-light">{t.description}</p>
                             </div>
                         ))}
                     </div>

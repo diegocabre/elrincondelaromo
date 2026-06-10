@@ -70,13 +70,13 @@ export default function HomeReviews() {
                     transition={{ duration: 0.6 }}
                     className="text-center mb-12"
                 >
-                    <span className="text-[#8B5E3C] font-semibold tracking-widest uppercase text-sm mb-3 block">Testimonios</span>
+                    <span className="text-[#dfa445] font-semibold tracking-widest uppercase text-sm mb-3 block">Testimonios</span>
                     <h2 className="text-3xl md:text-5xl font-bold text-[#4A3B32] mb-6">Lo que dicen nuestros clientes</h2>
                     <p className="text-[#6B5A4E] text-lg max-w-2xl mx-auto">
                         La experiencia y el bienestar de quienes nos visitan es nuestra mayor prioridad.
                     </p>
                 </motion.div>
-
+ 
                 {/* Carrusel */}
                 <div className="relative w-full min-h-[250px] md:min-h-[200px] flex items-center justify-center">
                     <AnimatePresence mode="wait">
@@ -89,7 +89,7 @@ export default function HomeReviews() {
                             className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-[#EACCA4]/30 flex flex-col items-center text-center w-full max-w-3xl"
                         >
                             <FaQuoteLeft className="text-[#EACCA4] text-4xl mb-4 opacity-50" />
-                            <div className="flex gap-1 mb-4 text-[#8B5E3C]">
+                            <div className="flex gap-1 mb-4 text-[#dfa445]">
                                 {[...Array(REVIEWS[currentIndex].rating)].map((_, i) => (
                                     <FaStar key={i} />
                                 ))}
@@ -104,19 +104,19 @@ export default function HomeReviews() {
                         </motion.div>
                     </AnimatePresence>
                 </div>
-
+ 
                 {/* Controles de Puntos */}
                 <div className="flex gap-3 mt-8">
                     {REVIEWS.map((_, idx) => (
                         <button
                             key={idx}
                             onClick={() => handleDotClick(idx)}
-                            className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === idx ? 'bg-[#8B5E3C] scale-125' : 'bg-[#EACCA4] hover:bg-[#8B5E3C]/60'}`}
+                            className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === idx ? 'bg-[#dfa445] scale-125' : 'bg-[#EACCA4] hover:bg-[#dfa445]/60'}`}
                             aria-label={`Ir a reseña ${idx + 1}`}
                         />
                     ))}
                 </div>
-
+ 
                 {/* Botón de Acción Google */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
@@ -128,7 +128,7 @@ export default function HomeReviews() {
                         href={GOOGLE_REVIEW_LINK}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 bg-white border-2 border-[#8B5E3C] text-[#8B5E3C] px-8 py-4 rounded-xl font-bold hover:bg-[#8B5E3C] hover:text-white transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
+                        className="flex items-center gap-3 bg-white border-2 border-[#dfa445] text-[#dfa445] px-8 py-4 rounded-xl font-bold hover:bg-[#dfa445] hover:text-white transition-all shadow-sm hover:shadow-lg hover:-translate-y-1"
                     >
                         <FaGoogle className="text-xl" />
                         ¡Valóranos en Google!

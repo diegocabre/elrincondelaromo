@@ -4,12 +4,30 @@
 :root {
   --bg-hero: url("/assets/img/fondo.png");
   --logo: url("/assets/img/LOGO.png");
-  --chestnut: #90533b;
-  --harvest-gold: #da983c;
-  --dark-fern: #495235;
+  --chestnut: #dfa445;
+  --harvest-gold: #dfa445;
+  --dark-fern: #6e721b;
   --chestnut-foreground: #ffffff;
   --harvest-gold-foreground: #1a1a1a;
   --dark-fern-foreground: #ffffff;
+  
+  --color-principal: #6e721b;
+  --color-neutro: #d2cbb6;
+  --color-detalles: #dfa445;
+}
+
+@theme {
+  --color-principal: #6e721b;
+  --color-neutro: #d2cbb6;
+  --color-detalles: #dfa445;
+  
+  --color-brand-green: #6e721b;
+  --color-brand-sand: #d2cbb6;
+  --color-brand-gold: #dfa445;
+  
+  --color-chestnut: #dfa445;
+  --color-harvest-gold: #dfa445;
+  --color-dark-fern: #6e721b;
 }
 
 @layer base {

@@ -27,10 +27,10 @@ export const NavBar = () => {
 
     const menuItems = [
         { href: '/home', label: 'Inicio' },
-        { href: '/about', label: 'Somos' },
-        { href: '/cafeteria-cowork', label: 'Cafetería | Cowork' },
         { href: '/talleres', label: 'Talleres' },
         { href: '/bienestar', label: 'Clases' },
+        { href: '/cafeteria-cowork', label: 'Co Work' },
+        { href: '/espacios', label: 'Espacios' },
         { href: '/contacto', label: 'Contacto' },
     ];
 
@@ -53,15 +53,19 @@ export const NavBar = () => {
                 </button>
 
                 {/* Menú desktop */}
-                <div className="hidden md:flex gap-8 items-center bg-white/60 backdrop-blur-md px-8 py-3 rounded-full shadow-sm border border-[#E8D1B5]/50">
-                    {menuItems.map((item) => (
-                        <NavLink
-                            key={item.href}
-                            href={item.href}
-                            className="text-[#6B5A4E] text-sm font-medium tracking-wide uppercase hover:text-[#8B5E3C] transition-colors"
-                        >
-                            {item.label}
-                        </NavLink>
+                <div className="hidden md:flex gap-4 items-center bg-[#dfa445] px-8 py-3 rounded-full shadow-md border border-[#dfa445]/20">
+                    {menuItems.map((item, idx) => (
+                        <div key={item.href} className="flex items-center gap-4">
+                            {idx > 0 && <span className="text-white/40 font-light select-none text-xs">|</span>}
+                            <NavLink
+                                href={item.href}
+                                className="text-white/95 text-xs font-semibold tracking-wider uppercase hover:text-white transition-colors py-1 px-1"
+                                activeClassName="text-white font-extrabold underline underline-offset-4 decoration-2"
+                                ignoreDefaultActiveStyles={true}
+                            >
+                                {item.label}
+                            </NavLink>
+                        </div>
                     ))}
                 </div>
             </div>
@@ -74,7 +78,9 @@ export const NavBar = () => {
                             key={item.href}
                             href={item.href}
                             onClick={() => setIsOpen(false)}
-                            className="text-[#4A3B32] text-lg font-medium hover:text-[#8B5E3C] transition-colors"
+                            className="text-[#4A3B32] text-lg font-medium hover:text-[#dfa445] transition-colors"
+                            activeClassName="text-[#dfa445] font-bold"
+                            ignoreDefaultActiveStyles={true}
                         >
                             {item.label}
                         </NavLink>

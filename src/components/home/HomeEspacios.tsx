@@ -21,7 +21,7 @@ const fadeInUp = {
 
 export default function HomeEspacios() {
   return (
-    <section className="w-full py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-[#E8D1B5]/40 mt-12">
+    <section className="w-full py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-[#dfa445]/20 mt-12">
       <motion.div
         initial="hidden"
         whileInView="show"
@@ -37,7 +37,7 @@ export default function HomeEspacios() {
         </motion.h2>
         <motion.div
           variants={fadeInUp}
-          className="w-24 h-1 bg-[#D4A373] mx-auto rounded-full"
+          className="w-24 h-1 bg-[#dfa445] mx-auto rounded-full"
         />
       </motion.div>
 
@@ -53,7 +53,7 @@ export default function HomeEspacios() {
           <Link href="/cafeteria-cowork">
             <div className="relative h-96 rounded-2xl overflow-hidden shadow-md">
               <Image
-                src="/assets/img/home/cafeteria.jpeg"
+                src="/assets/img/home/cafeteria.cr2"
                 alt="Cafetería"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
