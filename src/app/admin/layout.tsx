@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Calendar, BookOpen, UserCircle2, Settings } from 'lucide-react';
+import { LogOut, Calendar, BookOpen, UserCircle2, Settings, ShoppingBag } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -65,6 +65,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </Link>
 
                     <Link
+                        href="/admin/store"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                            pathname.includes('/admin/store') 
+                                ? 'bg-[#8B5E3C] text-white shadow-md' 
+                                : 'text-[#6B5A4E] hover:bg-[#FAEDDF] hover:text-[#8B5E3C]'
+                        }`}
+                    >
+                        <ShoppingBag className="w-5 h-5" /> Concept Store
+                    </Link>
+
+                    <Link
                         href="/admin/usuarios"
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
                             pathname.includes('/admin/usuarios') 
@@ -95,18 +106,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Mobile Topbar */}
             <div className="md:hidden fixed top-0 left-0 w-full bg-white shadow-md z-50 p-4 flex justify-between items-center border-b border-[#EACCA4]/30">
                 <span className="font-bold text-[#8B5E3C]">Admin Panel</span>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                      <Link href="/admin/agenda" className={`p-2 rounded-lg ${pathname.includes('/admin/agenda') ? 'bg-[#FAEDDF] text-[#8B5E3C]' : 'text-[#6B5A4E]'}`}>
-                        <Calendar className="w-5 h-5" />
+                        <Calendar className="w-4 h-4" />
                     </Link>
                     <Link href="/admin/clases" className={`p-2 rounded-lg ${pathname.includes('/admin/clases') ? 'bg-[#FAEDDF] text-[#8B5E3C]' : 'text-[#6B5A4E]'}`}>
-                        <Settings className="w-5 h-5" />
+                        <Settings className="w-4 h-4" />
                     </Link>
                     <Link href="/admin/talleres" className={`p-2 rounded-lg ${pathname.includes('/admin/talleres') ? 'bg-[#FAEDDF] text-[#8B5E3C]' : 'text-[#6B5A4E]'}`}>
-                        <BookOpen className="w-5 h-5" />
+                        <BookOpen className="w-4 h-4" />
+                    </Link>
+                    <Link href="/admin/store" className={`p-2 rounded-lg ${pathname.includes('/admin/store') ? 'bg-[#FAEDDF] text-[#8B5E3C]' : 'text-[#6B5A4E]'}`}>
+                        <ShoppingBag className="w-4 h-4" />
                     </Link>
                     <Link href="/admin/usuarios" className={`p-2 rounded-lg ${pathname.includes('/admin/usuarios') ? 'bg-[#FAEDDF] text-[#8B5E3C]' : 'text-[#6B5A4E]'}`}>
-                        <UserCircle2 className="w-5 h-5" />
+                        <UserCircle2 className="w-4 h-4" />
                     </Link>
                     <button onClick={handleLogout} className="p-2 rounded-lg text-[#C62828]">
                         <LogOut className="w-5 h-5" />

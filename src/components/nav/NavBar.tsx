@@ -30,6 +30,7 @@ export const NavBar = () => {
         { href: '/talleres', label: 'Talleres' },
         { href: '/bienestar', label: 'Clases' },
         { href: '/cafeteria-cowork', label: 'Co Work' },
+        { href: '/concept-store', label: 'Concept Store' },
         { href: '/espacios', label: 'Espacios' },
         { href: '/contacto', label: 'Contacto' },
     ];
