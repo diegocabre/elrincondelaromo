@@ -11,7 +11,7 @@ const fadeUp = {
 };
 
 const images = [
-  "cafeteria.png",
+  "cafeteria.cr2",
   "cafeteria1.jpeg",
   "cafeteria2.jpeg",
   "cafeteria3.jpeg",
