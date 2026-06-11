@@ -53,7 +53,7 @@ export default function HomeEspacios() {
           <Link href="/cafeteria-cowork">
             <div className="relative h-96 rounded-2xl overflow-hidden shadow-md">
               <Image
-                src="/assets/img/home/cafeteria.cr2"
+                src="/assets/img/home/home5.jpg"
                 alt="Cafetería"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
