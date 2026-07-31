@@ -41,6 +41,13 @@ export default function ContactoPage() {
     setSuccessMessage("");
     setErrorMessage("");
 
+    // Calcular el tiempo transcurrido en el cliente para evitar problemas de sincronización de reloj
+    if (formTimeRef.current && formTimeRef.current.value) {
+      const loadTime = parseInt(formTimeRef.current.value, 10);
+      const elapsed = Date.now() - loadTime;
+      formData.set("_ft", elapsed.toString());
+    }
+
     const res = await submitContactAction(formData);
 
     if (res.success && res.message) {
@@ -323,6 +330,7 @@ export default function ContactoPage() {
                         className="w-full px-3.5 py-2.5 bg-[#FDFCF8] border border-[#dfa445]/20 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#dfa445] text-[#4A3B32] transition-all resize-y min-h-[100px]"
                         placeholder="¿En qué podemos ayudarte?"
                         required
+                        minLength={4}
                       ></textarea>
                     </div>
 

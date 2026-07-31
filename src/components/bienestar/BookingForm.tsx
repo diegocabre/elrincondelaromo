@@ -84,6 +84,13 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
         setLoading(true);
         setSuccessMessage('');
         setErrorMessage('');
+
+        // Calcular el tiempo transcurrido en el cliente para evitar problemas de sincronización de reloj
+        if (formTimeRef.current && formTimeRef.current.value) {
+            const loadTime = parseInt(formTimeRef.current.value, 10);
+            const elapsed = Date.now() - loadTime;
+            formData.set('_ft', elapsed.toString());
+        }
         
         const d = new Date(selectedSlot.isoDate);
         // Formatear localmente para enviar retrocompatibilidad a la BD y a los emails (evitar GMT quirks)

@@ -46,8 +46,8 @@ export function isRandomString(text: string): boolean {
       current = 0;
     }
   }
-  // Más de 5 consonantes seguidas es muy inusual en español
-  if (maxConsecutiveConsonants >= 5) return true;
+  // Más de 7 consonantes seguidas es muy inusual en español/inglés (ej. evita bloquear nombres alemanes como Schmidt con prefijos de inicial)
+  if (maxConsecutiveConsonants >= 7) return true;
 
   // --- Regla 2: mezcla aleatoria de mayúsculas/minúsculas (CamelCase caótico) ---
   const letters = clean.replace(/[^a-zA-Z]/g, '');
@@ -120,7 +120,7 @@ export async function hasMxRecord(email: string): Promise<boolean> {
 /**
  * Valida que el mensaje tenga contenido real mínimo.
  */
-export function isMessageTooShort(message: string, minLength = 10): boolean {
+export function isMessageTooShort(message: string, minLength = 4): boolean {
   return (message?.trim().length ?? 0) < minLength;
 }
 
@@ -161,12 +161,25 @@ export function isLikelySpam(
 
   // 5. Tiempo mínimo de llenado (evita bots que envían inmediatamente)
   if (formTime) {
-    const loadedAt = parseInt(formTime, 10);
-    if (!isNaN(loadedAt)) {
-      const elapsed = Date.now() - loadedAt;
-      // Menos de 4 segundos = muy improbable que sea humano
-      if (elapsed < 4000) {
-        return { spam: true, reason: 'Formulario enviado demasiado rápido (bot).' };
+    const timeVal = parseInt(formTime, 10);
+    if (!isNaN(timeVal)) {
+      let elapsed = timeVal;
+      const isAbsolute = timeVal > 100000000000;
+      
+      if (isAbsolute) {
+        // Es un timestamp absoluto (fallback para compatibilidad o clientes antiguos)
+        elapsed = Date.now() - timeVal;
+        
+        // Si el cliente está adelantado con respecto al servidor, elapsed será negativo.
+        // Omitimos el bloqueo en caso de valor negativo para evitar falsos positivos por clock drift.
+        if (elapsed >= 0 && elapsed < 4000) {
+          return { spam: true, reason: `Formulario enviado demasiado rápido (bot - absoluto: ${elapsed}ms).` };
+        }
+      } else {
+        // Es un elapsed relativo (milisegundos transcurridos en el cliente)
+        if (elapsed < 4000) {
+          return { spam: true, reason: `Formulario enviado demasiado rápido (bot - relativo: ${elapsed}ms).` };
+        }
       }
     }
   }
