@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createBookingAction } from '@/actions/booking';
-
 import { motion } from 'framer-motion';
+import LegalFormConsent from '@/components/legal/LegalFormConsent';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -32,6 +32,7 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const formTimeRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -76,6 +77,11 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
     }, {} as Record<string, GlobalSlot[]>);
 
     const handleSubmit = async (formData: FormData) => {
+        if (!privacyAccepted) {
+            setErrorMessage('Debes aceptar la Política de Privacidad y Términos y Condiciones para reservar.');
+            return;
+        }
+
         if (!selectedSlot) {
             setErrorMessage('Debes seleccionar un horario.');
             return;
@@ -106,6 +112,7 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
         if (result.success && result.message) {
             setSuccessMessage(result.message);
             setSelectedSlot(null);
+            setPrivacyAccepted(false);
             document.querySelector("form")?.reset();
             // Refetch para que se marque como Lleno
             const therapyId = therapies.find(t => t.title === selectedTherapyTitle)?.id;
@@ -198,15 +205,8 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                 </div>
 
                 <div className="flex flex-col gap-2 pt-2">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-t border-[#EACCA4]/30 pt-4 mt-2">
-                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">Cupos Abiertos</label>
-                        <button 
-                            type="submit"
-                            disabled={loading || !selectedSlot}
-                            className="bg-[#8B5E3C] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed md:w-auto w-full text-base"
-                        >
-                            {loading ? "Procesando Reserva..." : (!selectedSlot ? "Selecciona un cupo abajo" : "Confirmar Reserva")}
-                        </button>
+                    <div className="border-t border-[#EACCA4]/30 pt-4 mt-2">
+                        <label className="text-sm font-semibold text-[#8B5E3C] uppercase tracking-wide">1. Selecciona un Cupo Disponible</label>
                     </div>
                     {loadingTimes ? (
                         <p className="text-[#6B5A4E] text-sm animate-pulse py-4">Buscando disponibilidades...</p>
@@ -254,6 +254,22 @@ export default function BookingForm({ therapies }: { therapies: Therapy[] }) {
                             ))}
                         </div>
                     )}
+                </div>
+
+                {/* 2. Consentimiento Legal y Botón de Envío */}
+                <div className="flex flex-col gap-4 border-t border-[#EACCA4]/30 pt-4 mt-2">
+                    <LegalFormConsent
+                        privacyAccepted={privacyAccepted}
+                        onPrivacyChange={setPrivacyAccepted}
+                    />
+
+                    <button 
+                        type="submit"
+                        disabled={loading || !selectedSlot || !privacyAccepted}
+                        className="bg-[#8B5E3C] text-white px-6 py-3.5 rounded-xl font-bold hover:bg-[#6D492E] transition-colors shadow-md hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed w-full text-base tracking-wide uppercase"
+                    >
+                        {loading ? "Procesando Reserva..." : (!selectedSlot ? "Selecciona un cupo arriba" : "Confirmar Reserva")}
+                    </button>
                 </div>
 
                 <style dangerouslySetInnerHTML={{__html: `

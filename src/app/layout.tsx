@@ -3,6 +3,7 @@ import { Dancing_Script, Montserrat } from "next/font/google";
 
 import Footer from "@/components/footer/Footer";
 import { NavBar } from "@/components/nav/NavBar";
+import CookieBanner from "@/components/legal/CookieBanner";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -77,7 +78,9 @@ export default function RootLayout({
         <NavBar />
         {children}
         <Footer />
+        <CookieBanner />
       </body>
     </html>
   );
 }
+

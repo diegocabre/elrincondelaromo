@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { Image as ImageIcon, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import LegalFormConsent from '@/components/legal/LegalFormConsent';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -287,6 +288,7 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
 function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller, onClose: () => void, handleAction: (payer: PayerData) => void }) {
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState<PayerData>({ name: '', surname: '', email: '', phone: '' });
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     let fullText = taller.description;
@@ -302,6 +304,10 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!privacyAccepted) {
+            alert('Debes aceptar la Política de Privacidad y Términos y Condiciones para continuar.');
+            return;
+        }
         if (!formData.name || !formData.surname || !formData.email || !formData.phone) return;
         setIsSubmitting(true);
         handleAction(formData);
@@ -398,11 +404,16 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
                                 <input type="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full p-3 rounded-lg border border-[#EACCA4] bg-white text-[#4A3B32] focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]" placeholder="+56 9 1234 5678" />
                             </div>
 
-                            <div className="flex flex-col md:flex-row items-center justify-between mt-6 pt-6 border-t border-[#EACCA4]/30 gap-4">
+                            <LegalFormConsent
+                                privacyAccepted={privacyAccepted}
+                                onPrivacyChange={setPrivacyAccepted}
+                            />
+
+                            <div className="flex flex-col md:flex-row items-center justify-between mt-4 pt-4 border-t border-[#EACCA4]/30 gap-4">
                                 <button type="button" onClick={() => setShowForm(false)} className="text-[#8B5E3C] hover:text-[#6D492E] font-medium w-full md:w-auto">
                                     ← Volver
                                 </button>
-                                <button type="submit" disabled={isSubmitting} className="px-8 py-4 bg-[#212121] hover:bg-[#000000] text-white rounded-xl font-bold shadow-lg w-full md:w-auto text-lg disabled:opacity-70 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2">
+                                <button type="submit" disabled={isSubmitting || !privacyAccepted} className="px-8 py-4 bg-[#212121] hover:bg-[#000000] text-white rounded-xl font-bold shadow-lg w-full md:w-auto text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2">
                                     {isSubmitting ? 'PROCESANDO...' : (paymentMode === 'sitio' ? 'AGENDAR (PAGO EN SITIO)' : `PAGAR $${Number(taller.price).toLocaleString('es-CL')}`)}
                                 </button>
                             </div>

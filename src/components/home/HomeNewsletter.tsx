@@ -37,6 +37,10 @@ export default function HomeNewsletter() {
               Suscribirme
             </button>
           </form>
+          <p className="text-[11px] text-[#a08a78] mt-3">
+            Al suscribirte aceptas el tratamiento de tus datos para el envío de novedades. Conoce nuestra{" "}
+            <a href="/privacidad" className="underline hover:text-[#8B5E3C]">Política de Privacidad</a>.
+          </p>
         </motion.div>
       </section>
   );

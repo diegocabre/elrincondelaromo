@@ -1,74 +1,129 @@
-import React from 'react';
-import type { Metadata } from 'next';
+// src/app/terminos/page.tsx
+import React from "react";
+import Link from "next/link";
+import type { Metadata } from "next";
+import { legalConfig } from "@/config/legalConfig";
 
 export const metadata: Metadata = {
-  title: 'Términos y Condiciones',
-  description: 'Políticas, términos y condiciones comerciales de El Rincón del Aromo y devoluciones de compras en línea.',
+  title: `Términos y Condiciones | ${legalConfig.brandName}`,
+  description: `Términos y condiciones de uso, contratación de servicios y políticas de devolución de ${legalConfig.brandName}.`,
 };
 
 export default function TerminosPage() {
   return (
     <main className="min-h-screen bg-[#FDFCF8] flex flex-col items-center pt-32 pb-24 px-6 md:px-12 text-[#4A3B32]">
       <div className="w-full max-w-4xl bg-white rounded-[2rem] shadow-xl p-8 md:p-16 border border-[#EACCA4]/30">
-        <h1 className="text-4xl md:text-5xl font-bold font-dancing text-[#8B5E3C] mb-8 text-center">Términos y Condiciones</h1>
-        
+        <div className="border-b border-[#EACCA4]/40 pb-6 mb-8 text-center md:text-left">
+          <Link
+            href="/"
+            className="text-xs font-semibold uppercase tracking-wider text-[#8B5E3C] hover:text-[#6D492E] transition mb-4 inline-flex items-center gap-1"
+          >
+            ← Volver al inicio
+          </Link>
+          <h1 className="text-3xl md:text-5xl font-bold font-dancing text-[#8B5E3C] mt-2 mb-3">
+            Términos y Condiciones de Uso
+          </h1>
+          <p className="text-xs text-[#a08a78] uppercase tracking-wider">
+            Última actualización: {legalConfig.lastUpdated} | Legislación de la República de Chile
+          </p>
+        </div>
+
         <div className="space-y-8 text-[#6B5A4E] leading-relaxed text-sm md:text-base">
+          {/* 1. Información General */}
           <section>
-            <h2 className="text-xl font-bold mb-3 text-[#4A3B32]">1. Consideraciones Generales</h2>
+            <h2 className="text-xl font-bold text-[#4A3B32] mb-3 border-l-4 border-[#8B5E3C] pl-3">
+              1. Información General y Titularidad
+            </h2>
             <p>
-              Bienvenido al sitio web de <strong>El Rincón del Aromo</strong>. Al acceder, navegar y/o comprar en nuestro sitio web oficial (www.rincondelaromo.com), usted acepta haber leído, entendido y estar de acuerdo con los siguientes términos y condiciones dispuestos en cumplimiento de la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores en la República de Chile.
+              El presente sitio web ({legalConfig.websiteUrl}) es operado por <strong>{legalConfig.companyName}</strong> (titular de la marca y establecimiento comercial <strong>{legalConfig.brandName}</strong>), RUT <strong>{legalConfig.companyRut}</strong>, con domicilio en {legalConfig.companyAddress}, correo electrónico de contacto: <a href={`mailto:${legalConfig.contactEmail}`} className="text-[#8B5E3C] underline">{legalConfig.contactEmail}</a>.
+            </p>
+            <p className="mt-2">
+              Al acceder, navegar y/o adquirir servicios a través de este sitio web, usted declara haber leído, comprendido y aceptado en su totalidad los presentes Términos y Condiciones, los cuales se rigen por la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores y la Ley N° 19.628 / N° 21.719 sobre Protección de Datos Personales en Chile.
             </p>
           </section>
 
+          {/* 2. Contratación de Servicios e Inscripción a Talleres */}
           <section>
-            <h2 className="text-xl font-bold mb-3 text-[#4A3B32]">2. Contratación de Servicios e Inscripción a Talleres</h2>
+            <h2 className="text-xl font-bold text-[#4A3B32] mb-3 border-l-4 border-[#8B5E3C] pl-3">
+              2. Contratación de Servicios e Inscripción a Talleres
+            </h2>
             <p className="mb-2">
-              A través de este sitio web, usted podrá reservar, agendar y comprar cupos para <strong>Talleres, Sesiones de Bienestar y Clases</strong>.
+              A través de este sitio web, usted podrá consultar, reservar, agendar y adquirir cupos para <strong>Talleres, Sesiones de Bienestar, Espacios de Cowork y Clases</strong>.
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li>El pago de los talleres asegura un lugar intransferible (salvo aviso previo de 48 horas) dentro de un cupo limitado de participantes.</li>
-              <li>Nos reservamos el derecho de reprogramar o cancelar talleres en caso de no cumplir con el aforo mínimo requerido. En tal caso, ofreceremos alternativas de fechas o la devolución íntegra del dinero depositado.</li>
-              <li>A fin de garantizar un servicio puntual, se espera la llegada de los participantes al menos 10 minutos antes del inicio de la actividad.</li>
+              <li>El pago o reserva de talleres asegura un cupo individual e intransferible (salvo aviso previo con al menos 48 horas de anticipación) dentro del aforo limitado del taller.</li>
+              <li>{legalConfig.brandName} se reserva el derecho de reprogramar o suspender talleres en caso de no alcanzar el aforo mínimo indispensable o por causas de fuerza mayor. En tales circunstancias, se ofrecerá la reubicación en una nueva fecha o la devolución íntegra e inmediata del monto pagado.</li>
+              <li>A fin de garantizar el desarrollo armónico y puntual de las actividades, se solicita a los asistentes presentarse al menos 10 minutos antes del inicio programado.</li>
             </ul>
           </section>
 
+          {/* 3. Derecho a Retracto y Políticas de Devolución */}
           <section>
-            <h2 className="text-xl font-bold mb-3 text-[#4A3B32]">3. Derecho a Retracto y Políticas de Devolución</h2>
+            <h2 className="text-xl font-bold text-[#4A3B32] mb-3 border-l-4 border-[#8B5E3C] pl-3">
+              3. Derecho a Retracto y Políticas de Devolución
+            </h2>
             <p className="mb-2">
-              En conformidad con el Artículo 3° bis de la Ley del Consumidor, <strong>El Rincón del Aromo otorga a sus clientes el Derecho a Retracto</strong> en las siguientes condiciones específicas relativas a nuestros servicios (Talleres y Terapias presenciales):
+              En conformidad con el Artículo 3° bis de la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores, <strong>{legalConfig.brandName}</strong> establece las siguientes condiciones para cancelaciones y devoluciones:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li>Podrá anular o cancelar su compra con derecho a devolución total del dinero si da aviso justificable <strong>con al menos 72 horas de anticipación</strong> antes del inicio programado del evento o taller.</li>
-              <li>Las cancelaciones ocurridas en un periodo <strong>menor a 72 horas</strong> de la realización del taller no accederán a devolución, dado que el cupo fue bloqueado imposibilitando su venta, y los insumos fueron adquiridos por parte de nuestra administración. Sin embargo, en casos de fuerza mayor con certicado médico, evaluaremos otorgarle crédito para el futuro u otra clase.</li>
-              <li>El canal válido y exclusivo para solicitar devoluciones o alteraciones es el correo electrónico oficial: <strong>contacto@rincondelaromo.com</strong> o mediante nuestro WhatsApp de contacto.</li>
-              <li>Toda devolución validada se procesará mediante transferencia electrónica a cuenta bancaria local de Chile en un plazo no mayor a 10 días hábiles.</li>
+              <li>
+                <strong>Aviso previo con más de 72 horas:</strong> El usuario podrá anular su inscripción con derecho a devolución del 100% del dinero abonado si lo solicita formalmente con al menos 72 horas de anticipación al inicio del taller o sesión.
+              </li>
+              <li>
+                <strong>Cancelaciones con menos de 72 horas:</strong> No procederá devolución dineraria debido a que el cupo fue reservado con anticipación, impidiendo su venta a otro interesado, y los insumos y materiales fueron adquiridos por la administración. No obstante, en situaciones de fuerza mayor debidamente acreditadas (ej. certificado médico), la administración evaluará otorgar crédito para una fecha posterior.
+              </li>
+              <li>
+                <strong>Canal exclusivo de solicitud:</strong> Toda solicitud de cancelación debe enviarse al correo oficial <strong><a href={`mailto:${legalConfig.contactEmail}`} className="text-[#8B5E3C] underline">{legalConfig.contactEmail}</a></strong> o a través del WhatsApp oficial (<a href={`tel:${legalConfig.phone.replace(/\s+/g, '')}`} className="text-[#8B5E3C]">{legalConfig.phone}</a>).
+              </li>
+              <li>
+                <strong>Plazo de procesamiento:</strong> Las devoluciones aprobadas serán transferidas a la cuenta bancaria chilena indicada por el titular en un plazo máximo de 10 días hábiles.
+              </li>
             </ul>
           </section>
 
+          {/* 4. Medio de Pago Seguro */}
           <section>
-            <h2 className="text-xl font-bold mb-3 text-[#4A3B32]">4. Medio de Pago Seguro (Mercado Pago)</h2>
+            <h2 className="text-xl font-bold text-[#4A3B32] mb-3 border-l-4 border-[#8B5E3C] pl-3">
+              4. Medios de Pago y Seguridad Transaccional
+            </h2>
             <p>
-              Toda transacción realizada en nuestra plataforma digital transita y es validada a través de los servidores de encriptación certificada de <strong>Mercado Pago Chile</strong>. El Rincón del Aromo no recopila ni almacena bajo ningún concepto los números de sus tarjetas de crédito o débito, resguardando íntegramente su privacidad financiera mercantil.
+              Las compras y pagos digitales se canalizan a través de servidores encriptados y certificados provistos por <strong>Mercado Pago Chile</strong>. {legalConfig.brandName} no recopila, no procesa ni almacena números de tarjetas de crédito o débito ni claves bancarias, garantizando la total confidencialidad financiera del usuario.
             </p>
           </section>
 
+          {/* 5. Propiedad Intelectual */}
           <section>
-            <h2 className="text-xl font-bold mb-3 text-[#4A3B32]">5. Privacidad y Protección de Datos</h2>
+            <h2 className="text-xl font-bold text-[#4A3B32] mb-3 border-l-4 border-[#8B5E3C] pl-3">
+              5. Propiedad Intelectual e Industrial
+            </h2>
             <p>
-              En estricto rigor con la Ley N° 19.628 sobre Protección de la Vida Privada, los datos suministrados por los clientes durante el flujo de la compra (Nombres, Correo Electrónico y Teléfono celular) se utilizarán estricta y puramente para fines operacionales, administrativos y de contacto vital referentes a las sesiones adquiridas por el cliente. En El Rincón del Aromo nos comprometemos de manera intachable a <strong>no distribuir, vendar ni facilitar sus datos personales a terceras partes.</strong>
+              Todos los contenidos, imágenes, marcas comerciales, logotipos, textos, ilustraciones, diseños y código fuente exhibidos en este sitio web son propiedad exclusiva de <strong>{legalConfig.companyName}</strong> / <strong>{legalConfig.brandName}</strong> o de terceros que han autorizado su inclusión, protegidos por las leyes de propiedad intelectual e industrial de Chile y tratados internacionales. Queda prohibida su reproducción o distribución comercial sin consentimiento previo por escrito.
             </p>
           </section>
 
+          {/* 6. Privacidad y Protección de Datos */}
           <section>
-            <h2 className="text-xl font-bold mb-3 text-[#4A3B32]">6. Contacto y Consultas Adicionales</h2>
+            <h2 className="text-xl font-bold text-[#4A3B32] mb-3 border-l-4 border-[#8B5E3C] pl-3">
+              6. Privacidad y Protección de Datos Personales
+            </h2>
             <p>
-              Si tienes cualquier consulta con respecto a nuestras bases operativas o nuestros sistemas de compras en línea, tu ejecutivo responderá de lunes a viernes en los horarios hábiles mediante nuestros canales presenciales de la cafetería o al correo <strong>contacto@rincondelaromo.com</strong>.
+              El tratamiento de datos personales recabados a través del sitio web se rige por lo dispuesto en nuestra <Link href="/privacidad" className="text-[#8B5E3C] font-semibold underline">Política de Privacidad</Link>. Nos comprometemos a no comercializar ni ceder los datos de los usuarios a terceros ajenos a la operación del servicio.
+            </p>
+          </section>
+
+          {/* 7. Ley Aplicable y Jurisdicción */}
+          <section>
+            <h2 className="text-xl font-bold text-[#4A3B32] mb-3 border-l-4 border-[#8B5E3C] pl-3">
+              7. Legislación Aplicable y Jurisdicción
+            </h2>
+            <p>
+              Los presentes Términos y Condiciones se interpretan y rigen íntegramente conforme a las leyes de la República de Chile. Para cualquier controversia, litigio o interpretación derivada de su validez o aplicación, las partes fijan su domicilio en la comuna de {legalConfig.cityJurisdiction} y se someten expresamente a la jurisdicción de los <strong>Tribunales Ordinarios de Justicia de la ciudad de {legalConfig.cityJurisdiction}, Chile</strong>.
             </p>
           </section>
 
           <div className="mt-12 pt-6 border-t border-[#EACCA4]/40 text-center text-xs text-[#a08a78]">
-            Última actualización de documento: Documento Actualizado en base a la Ley de Derechos del Consumidor vigente. <br/>
-            El Rincón del Aromo - Osorno, Región de Los Lagos, Chile.
+            {legalConfig.brandName} — {legalConfig.companyAddress} <br />
+            {legalConfig.cityJurisdiction}, Región de Los Lagos, Chile.
           </div>
         </div>
       </div>

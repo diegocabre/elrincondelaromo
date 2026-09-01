@@ -50,13 +50,23 @@ export default function Footer() {
                         +56 9 8722 2243
                     </Link>
 
-                    <Link href="/admin/login" className="mt-4 text-xs text-[#a08a78] hover:text-[#dfa445] transition-colors flex items-center gap-1 opacity-60 hover:opacity-100">
+                    <div className="flex flex-wrap items-center justify-center gap-3 mt-3 text-xs text-[#a08a78]">
+                        <Link href="/privacidad" className="hover:text-[#8B5E3C] transition-colors underline-offset-2 hover:underline">
+                            Política de Privacidad
+                        </Link>
+                        <span>•</span>
+                        <Link href="/terminos" className="hover:text-[#8B5E3C] transition-colors underline-offset-2 hover:underline">
+                            Términos y Condiciones
+                        </Link>
+                        <span>•</span>
+                        <Link href="/privacidad#cookies" className="hover:text-[#8B5E3C] transition-colors underline-offset-2 hover:underline">
+                            Cookies
+                        </Link>
+                    </div>
+
+                    <Link href="/admin/login" className="mt-2 text-[11px] text-[#a08a78] hover:text-[#dfa445] transition-colors flex items-center gap-1 opacity-60 hover:opacity-100">
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
                         Acceso Administrador
-                    </Link>
-
-                    <Link href="/terminos" className="mt-2 text-[10px] uppercase tracking-wider text-[#a08a78] hover:text-[#dfa445] transition-colors opacity-70">
-                        Términos y Políticas de Devolución
                     </Link>
                 </div>
             </div>

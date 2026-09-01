@@ -12,6 +12,7 @@ import {
   FaMapMarkerAlt,
   FaWhatsapp,
 } from "react-icons/fa";
+import LegalFormConsent from "@/components/legal/LegalFormConsent";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -27,6 +28,7 @@ export default function ContactoPage() {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const formTimeRef = useRef<HTMLInputElement>(null);
 
   // Guardar el timestamp de carga del formulario para detectar envíos ultrarrápidos (bots)
@@ -37,6 +39,11 @@ export default function ContactoPage() {
   }, []);
 
   const handleSubmit = async (formData: FormData) => {
+    if (!privacyAccepted) {
+      setErrorMessage("Debes aceptar la Política de Privacidad y Términos y Condiciones para enviar tu mensaje.");
+      return;
+    }
+
     setLoading(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -52,6 +59,7 @@ export default function ContactoPage() {
 
     if (res.success && res.message) {
       setSuccessMessage(res.message);
+      setPrivacyAccepted(false);
       document.querySelector("form")?.reset();
       // Restaurar el timestamp tras reset
       if (formTimeRef.current)
@@ -334,9 +342,14 @@ export default function ContactoPage() {
                       ></textarea>
                     </div>
 
+                    <LegalFormConsent
+                      privacyAccepted={privacyAccepted}
+                      onPrivacyChange={setPrivacyAccepted}
+                    />
+
                     <button
                       type="submit"
-                      disabled={loading}
+                      disabled={loading || !privacyAccepted}
                       className="w-full bg-[#dfa445] text-white mt-2 px-6 py-3 rounded-xl font-bold hover:bg-[#c99136] transition-colors shadow-xs flex items-center justify-center disabled:opacity-50 tracking-wider uppercase text-xs"
                     >
                       {loading ? "Enviando..." : "Enviar Mensaje"}
