@@ -66,7 +66,9 @@ export const metadata: Metadata = {
     follow: true,
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    google:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      "6fxZgHFwVHUSWY5tChwkrYyDpXbUmM2dPXEbpV4Kc3M",
   },
 };
 
