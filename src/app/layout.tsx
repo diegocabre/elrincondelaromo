@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Dancing_Script, Montserrat } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import Footer from "@/components/footer/Footer";
 import { NavBar } from "@/components/nav/NavBar";
 import CookieBanner from "@/components/legal/CookieBanner";
+import MicrosoftClarity from "@/components/analytics/MicrosoftClarity";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -63,6 +65,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+  },
 };
 
 export default function RootLayout({
@@ -79,6 +84,8 @@ export default function RootLayout({
         {children}
         <Footer />
         <CookieBanner />
+        <SpeedInsights />
+        <MicrosoftClarity />
       </body>
     </html>
   );
