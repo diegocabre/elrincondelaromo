@@ -17,6 +17,10 @@ interface Taller {
     registered_count?: number;
 }
 
+interface WorkshopWithCount extends Taller {
+    workshop_registrations?: { count: number }[];
+}
+
 interface Photo {
     id: string;
     image_url: string;
@@ -87,7 +91,7 @@ export default function AdminTalleresPage() {
             .select('*, workshop_registrations(count)')
             .order('created_at', { ascending: false });
         if (data) {
-            const formatted = (data as any[]).map(t => ({
+            const formatted = (data as unknown as WorkshopWithCount[]).map(t => ({
                 ...t,
                 registered_count: t.workshop_registrations?.[0]?.count ?? 0
             }));

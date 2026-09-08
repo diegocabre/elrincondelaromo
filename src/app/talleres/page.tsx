@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   }
 };
 
+interface WorkshopQueryResult extends Taller {
+  workshop_registrations?: { count: number }[];
+}
+
 export default async function TalleresPage() {
   // Data fetched directamente en Servidor! Sin Loading Spinners en Cliente.
   const { data } = await supabase
@@ -21,7 +25,7 @@ export default async function TalleresPage() {
     .select('*, workshop_registrations(count)')
     .order('created_at', { ascending: false });
 
-  const talleresData = ((data as any[]) || []).map(item => ({
+  const talleresData = ((data as unknown as WorkshopQueryResult[]) || []).map(item => ({
     ...item,
     registered_count: item.workshop_registrations?.[0]?.count ?? 0
   })) as Taller[];
