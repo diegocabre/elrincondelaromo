@@ -13,6 +13,41 @@ export async function POST(request: Request) {
         const reqUrl = new URL(request.url);
         const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
 
+        // 0. Validar disponibilidad y cupos del taller
+        const { data: workshop, error: wsError } = await supabase
+            .from('workshops')
+            .select('*, workshop_registrations(count)')
+            .eq('id', item.id)
+            .single();
+
+        if (wsError || !workshop) {
+            return NextResponse.json({ error: "El taller no existe o no está disponible" }, { status: 404 });
+        }
+
+        if (workshop.status === 'realizado') {
+            return NextResponse.json({ error: "Este taller ya ha finalizado" }, { status: 400 });
+        }
+
+        let capacity: number | null = null;
+        try {
+            const parsed = JSON.parse(workshop.description);
+            if (parsed.capacity !== undefined && parsed.capacity !== null && parsed.capacity !== '') {
+                const cap = Number(parsed.capacity);
+                if (!isNaN(cap) && cap > 0) capacity = cap;
+            }
+        } catch {}
+
+        const currentCount = workshop.workshop_registrations?.[0]?.count ?? 0;
+        const isCapacityFull = capacity !== null && currentCount >= capacity;
+        const isFull = workshop.status === 'lleno' || isCapacityFull;
+
+        if (isFull) {
+            if (workshop.status !== 'lleno') {
+                await supabase.from('workshops').update({ status: 'lleno' }).eq('id', workshop.id);
+            }
+            return NextResponse.json({ error: "Lo sentimos, los cupos para este taller se han agotado." }, { status: 400 });
+        }
+
         // 1. Guardar en Supabase el registro en estado Pendiente
         const { data: registration, error: dbError } = await supabase
             .from('workshop_registrations')
@@ -30,6 +65,11 @@ export async function POST(request: Request) {
         if (dbError) {
             console.error("Error guardando inscripción en BD:", dbError);
             return NextResponse.json({ error: "No se pudo crear el registro en la base de datos" }, { status: 500 });
+        }
+
+        // Si con esta inscripción se completó la capacidad, marcar taller como lleno en BD
+        if (capacity !== null && (currentCount + 1) >= capacity) {
+            await supabase.from('workshops').update({ status: 'lleno' }).eq('id', item.id);
         }
 
         const registrationId = registration.id;

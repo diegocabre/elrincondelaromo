@@ -27,6 +27,44 @@ export interface Taller {
   status: string;
   image_url: string;
   date_info: string;
+  registered_count?: number;
+}
+
+export function getWorkshopDetails(taller: Taller) {
+  let short = taller.description;
+  let full = taller.description;
+  let payment = 'mercadopago';
+  let bank_details = '';
+  let capacity: number | null = null;
+
+  try {
+    const parsed = JSON.parse(taller.description);
+    if (parsed.short) short = parsed.short;
+    if (parsed.full) full = parsed.full;
+    if (parsed.payment) payment = parsed.payment;
+    if (parsed.bank_details) bank_details = parsed.bank_details;
+    if (parsed.capacity !== undefined && parsed.capacity !== null && parsed.capacity !== '') {
+      const capNum = Number(parsed.capacity);
+      if (!isNaN(capNum) && capNum > 0) capacity = capNum;
+    }
+  } catch {}
+
+  const registeredCount = taller.registered_count ?? 0;
+  const isCapacityFull = capacity !== null && registeredCount >= capacity;
+  const isLleno = taller.status === 'lleno' || isCapacityFull;
+  const spotsLeft = capacity !== null ? Math.max(0, capacity - registeredCount) : null;
+
+  return {
+    short,
+    full,
+    payment,
+    bank_details,
+    capacity,
+    registeredCount,
+    isCapacityFull,
+    isLleno,
+    spotsLeft
+  };
 }
 
 interface WorkshopPhoto {
@@ -165,9 +203,20 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                     <p className="text-[#6B5A4E] text-center">Pronto publicaremos nuevos talleres. ¡Mantente atento!</p>
                 ) : (
                     <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-                    {activos.map(taller => (
-                        <WorkshopPublicCard key={taller.id} taller={taller} handleAction={() => setDetailModal(taller)} actionText={taller.status === 'lleno' ? 'Cupos Agotados' : 'Inscribirme'} isRealizado={false} isLleno={taller.status === 'lleno'} onClickDetails={() => setDetailModal(taller)} />
-                    ))}
+                    {activos.map(taller => {
+                        const details = getWorkshopDetails(taller);
+                        return (
+                            <WorkshopPublicCard 
+                                key={taller.id} 
+                                taller={taller} 
+                                handleAction={() => setDetailModal(taller)} 
+                                actionText={details.isLleno ? 'Cupos Agotados' : 'Inscribirme'} 
+                                isRealizado={false} 
+                                isLleno={details.isLleno} 
+                                onClickDetails={() => setDetailModal(taller)} 
+                            />
+                        );
+                    })}
                     </motion.div>
                 )}
             </div>
@@ -291,19 +340,18 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    let fullText = taller.description;
-    let paymentMode = 'mercadopago';
-    try {
-        const parsed = JSON.parse(taller.description);
-        if (parsed.full) fullText = parsed.full;
-        if (parsed.payment) paymentMode = parsed.payment;
-    } catch {}
-
+    const details = getWorkshopDetails(taller);
+    const fullText = details.full;
+    const paymentMode = details.payment;
     const isRealizado = taller.status === 'realizado';
-    const isLleno = taller.status === 'lleno';
+    const isLleno = details.isLleno;
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (isLleno) {
+            alert('Lo sentimos, los cupos para este taller ya están agotados.');
+            return;
+        }
         if (!privacyAccepted) {
             alert('Debes aceptar la Política de Privacidad y Términos y Condiciones para continuar.');
             return;
@@ -347,10 +395,25 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
                     <span className="text-[#8B5E3C] text-xs font-bold uppercase tracking-widest mb-2">{taller.category}</span>
                     <h2 className="text-3xl font-bold text-[#4A3B32] mb-6">{taller.title}</h2>
                     
-                    <div className="flex items-center gap-2 text-[#6B5A4E] text-sm font-medium mb-8 bg-[#FAEDDF] w-max px-4 py-2 rounded-xl">
-                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        {taller.date_info}
+                    <div className="flex flex-wrap items-center gap-3 mb-8">
+                        <div className="flex items-center gap-2 text-[#6B5A4E] text-sm font-medium bg-[#FAEDDF] px-4 py-2 rounded-xl">
+                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            {taller.date_info}
+                        </div>
+                        {details.capacity !== null && !isRealizado && (
+                            <div className={`text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 ${isLleno ? 'bg-red-100 text-red-700' : 'bg-[#FAEDDF] text-[#8B5E3C]'}`}>
+                                <span className={`w-2 h-2 rounded-full ${isLleno ? 'bg-red-500' : 'bg-green-500'}`}></span>
+                                {isLleno ? 'Cupos Agotados' : `${details.spotsLeft} cupos disponibles de ${details.capacity}`}
+                            </div>
+                        )}
                     </div>
+
+                    {isLleno && !isRealizado && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm font-semibold flex items-center gap-3">
+                            <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                            <span>¡Cupos agotados! Este taller ha completado su capacidad máxima y no se permiten más inscripciones.</span>
+                        </div>
+                    )}
 
                     {!showForm ? (
                         <>
@@ -426,13 +489,9 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
 }
 
 function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isLleno, onClickDetails }: { taller: Taller, handleAction: () => void, actionText: string, isRealizado: boolean, isLleno: boolean, onClickDetails: () => void }) {
-    
-    // Extractor del JSON para el resumen
-    let summaryText = taller.description;
-    try {
-        const parsed = JSON.parse(taller.description);
-        if (parsed.short) summaryText = parsed.short;
-    } catch {}
+    const details = getWorkshopDetails(taller);
+    const summaryText = details.short;
+    const actualIsLleno = isLleno || details.isLleno;
 
     return (
         <motion.div 
@@ -456,9 +515,14 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isL
 
             {/* Contenido sobre Imagen */}
             <div className="relative z-20 p-8 flex flex-col h-full justify-end text-white pointer-events-none">
-                <span className={`inline-flex px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full mb-4 self-start shadow-md backdrop-blur-md gap-2 ${isRealizado ? 'bg-white/20 text-white' : 'bg-[#EACCA4] text-[#2c231d]'}`}>
+                <span className={`inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full mb-4 self-start shadow-md backdrop-blur-md gap-2 ${isRealizado ? 'bg-white/20 text-white' : 'bg-[#EACCA4] text-[#2c231d]'}`}>
                     <span>{isRealizado ? 'Realizado' : taller.category}</span>
-                    {isLleno && <span className="bg-red-600 text-white px-2 rounded-full">AGOTADO</span>}
+                    {actualIsLleno && <span className="bg-red-600 text-white px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-normal">AGOTADO</span>}
+                    {!isRealizado && !actualIsLleno && details.spotsLeft !== null && details.spotsLeft <= 3 && (
+                        <span className="bg-[#8B5E3C] text-[#FAEDDF] px-2 py-0.5 rounded-full text-[10px] font-bold tracking-normal">
+                            {details.spotsLeft === 1 ? 'Último cupo' : `Últimos ${details.spotsLeft} cupos`}
+                        </span>
+                    )}
                 </span>
                 
                 <h3 className="text-3xl font-bold text-white mb-2">{taller.title}</h3>
@@ -479,11 +543,11 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isL
                     )}
                     <button 
                         onClick={(e) => { e.stopPropagation(); handleAction(); }}
-                        disabled={isLleno && !isRealizado}
-                        className={`px-8 py-3 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 flex-shrink-0 disabled:cursor-not-allowed ${isRealizado ? 'w-full bg-white/20 text-white hover:bg-white hover:text-[#2c231d] backdrop-blur-sm' : isLleno ? 'w-full xl:w-auto bg-gray-500 text-gray-200' : 'w-full xl:w-auto bg-[#EACCA4] text-[#2c231d] hover:bg-white'}`}
+                        disabled={actualIsLleno && !isRealizado}
+                        className={`px-8 py-3 rounded-full font-bold transition-all shadow-lg flex items-center justify-center gap-2 flex-shrink-0 disabled:cursor-not-allowed ${isRealizado ? 'w-full bg-white/20 text-white hover:bg-white hover:text-[#2c231d] backdrop-blur-sm' : actualIsLleno ? 'w-full xl:w-auto bg-gray-500 text-gray-200 cursor-not-allowed' : 'w-full xl:w-auto bg-[#EACCA4] text-[#2c231d] hover:bg-white'}`}
                     >
                         {isRealizado && <ImageIcon className="w-4 h-4"/>}
-                        {actionText}
+                        {actualIsLleno && !isRealizado ? 'Cupos Agotados' : actionText}
                     </button>
                 </div>
             </div>

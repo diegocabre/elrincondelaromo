@@ -16,8 +16,15 @@ export const metadata: Metadata = {
 
 export default async function TalleresPage() {
   // Data fetched directamente en Servidor! Sin Loading Spinners en Cliente.
-  const { data } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
-  const talleresData = (data as Taller[]) || [];
+  const { data } = await supabase
+    .from('workshops')
+    .select('*, workshop_registrations(count)')
+    .order('created_at', { ascending: false });
+
+  const talleresData = ((data as any[]) || []).map(item => ({
+    ...item,
+    registered_count: item.workshop_registrations?.[0]?.count ?? 0
+  })) as Taller[];
 
   return (
     <main className="min-h-screen bg-[#FDFCF8] flex flex-col items-center pt-32 pb-24 px-6 md:px-12">

@@ -14,6 +14,7 @@ interface Taller {
     description: string;
     image_url: string;
     status: string;
+    registered_count?: number;
 }
 
 interface Photo {
@@ -39,7 +40,7 @@ export default function AdminTalleresPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [galleryModal, setGalleryModal] = useState<string | null>(null);
-    const [registrationsModal, setRegistrationsModal] = useState<{id: string, title: string, bank_details?: string} | null>(null);
+    const [registrationsModal, setRegistrationsModal] = useState<{id: string, title: string, bank_details?: string, capacity?: number | null} | null>(null);
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [loadingRegs, setLoadingRegs] = useState(false);
     
@@ -50,6 +51,7 @@ export default function AdminTalleresPage() {
         description: '', // Resumen Corto
         full_description: '', // Descripción completa
         price: '',
+        capacity: '', // Cupos máximos
         date_info: '',
         status: 'activo',
         payment_mode: 'mercadopago',
@@ -80,8 +82,17 @@ export default function AdminTalleresPage() {
 
     const fetchTalleres = async () => {
         setLoading(true);
-        const { data } = await supabase.from('workshops').select('*').order('created_at', { ascending: false });
-        if (data) setTalleres(data);
+        const { data } = await supabase
+            .from('workshops')
+            .select('*, workshop_registrations(count)')
+            .order('created_at', { ascending: false });
+        if (data) {
+            const formatted = (data as any[]).map(t => ({
+                ...t,
+                registered_count: t.workshop_registrations?.[0]?.count ?? 0
+            }));
+            setTalleres(formatted);
+        }
         setLoading(false);
     };
 
@@ -114,11 +125,13 @@ export default function AdminTalleresPage() {
         }
 
         const priceNum = parseInt(formData.price, 10) || 0;
+        const capacityNum = formData.capacity ? parseInt(formData.capacity, 10) : null;
         
         const combinedDescription = JSON.stringify({
             short: formData.description,
             full: formData.full_description || formData.description,
             payment: formData.payment_mode,
+            capacity: capacityNum,
             ...(formData.payment_mode === 'sitio' ? { bank_details: formData.bank_details } : {})
         });
 
@@ -152,7 +165,7 @@ export default function AdminTalleresPage() {
 
         if (!dbError) {
             alert(editId ? 'Taller actualizado con éxito' : 'Taller creado con éxito');
-            setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo', payment_mode: 'mercadopago', bank_details: '' });
+            setFormData({ title: '', category: '', description: '', full_description: '', price: '', capacity: '', date_info: '', status: 'activo', payment_mode: 'mercadopago', bank_details: '' });
             setTempDate({ day: '', start: '', end: '' });
             setImageFile(null);
             setEditId(null);
@@ -168,12 +181,16 @@ export default function AdminTalleresPage() {
         let full = t.description;
         let payment_mode = 'mercadopago';
         let bank_details = '';
+        let capacity = '';
         try {
             const parsed = JSON.parse(t.description);
             if (parsed.short) short = parsed.short;
             if (parsed.full) full = parsed.full;
             if (parsed.payment) payment_mode = parsed.payment;
             if (parsed.bank_details) bank_details = parsed.bank_details;
+            if (parsed.capacity !== undefined && parsed.capacity !== null && parsed.capacity !== '') {
+                capacity = parsed.capacity.toString();
+            }
         } catch {}
         
         setFormData({
@@ -182,6 +199,7 @@ export default function AdminTalleresPage() {
             description: short,
             full_description: full,
             price: t.price.toString(),
+            capacity: capacity,
             date_info: t.date_info,
             status: t.status,
             payment_mode: payment_mode,
@@ -201,8 +219,8 @@ export default function AdminTalleresPage() {
         }
     };
 
-    const handleOpenRegistrations = async (id: string, title: string, bank_details: string) => {
-        setRegistrationsModal({id, title, bank_details});
+    const handleOpenRegistrations = async (id: string, title: string, bank_details: string, capacity?: number | null) => {
+        setRegistrationsModal({id, title, bank_details, capacity});
         setLoadingRegs(true);
         const { data } = await supabase.from('workshop_registrations').select('*').eq('workshop_id', id).order('created_at', { ascending: false });
         setRegistrations(data || []);
@@ -220,6 +238,7 @@ export default function AdminTalleresPage() {
         if (response.ok) {
             setRegistrations(registrations.map(r => r.id === regId ? { ...r, status: 'pagado' } : r));
             alert('Pago confirmado y correo enviado.');
+            fetchTalleres();
         } else {
             alert('Error confirmando pago');
         }
@@ -236,6 +255,7 @@ export default function AdminTalleresPage() {
         if (response.ok) {
             setRegistrations(registrations.filter(r => r.id !== regId));
             alert('Cupo eliminado y correo enviado.');
+            fetchTalleres();
         } else {
             alert('Error eliminando cupo');
         }
@@ -308,6 +328,10 @@ export default function AdminTalleresPage() {
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Precio (Clp)</label>
                             <input required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} type="number" placeholder="Ej. 25000" className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Cupos / Participantes Máximos</label>
+                            <input value={formData.capacity} onChange={e => setFormData({...formData, capacity: e.target.value})} type="number" min="1" placeholder="Ej. 10 (Dejar vacío si es ilimitado)" className="px-4 py-3 rounded-xl bg-[#FDFCF8] border border-[#EACCA4]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/50 text-[#4A3B32]"/>
                         </div>
                         <div className="flex flex-col gap-2 md:col-span-2">
                             <label className="text-xs font-semibold text-[#8B5E3C] uppercase">Descripción Corta (Para la Tarjeta)</label>
@@ -394,7 +418,16 @@ export default function AdminTalleresPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-[#FDFCF8] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl">
                         <div className="p-6 border-b border-[#EACCA4] flex justify-between items-center bg-white rounded-t-2xl">
-                            <h2 className="text-xl font-bold text-[#4A3B32]">Inscritos: {registrationsModal.title}</h2>
+                            <div>
+                                <h2 className="text-xl font-bold text-[#4A3B32]">Inscritos: {registrationsModal.title}</h2>
+                                <p className="text-xs text-[#6B5A4E] mt-1">
+                                    Total inscripciones: <strong className="text-[#4A3B32]">{registrations.length}</strong>
+                                    {registrationsModal.capacity ? ` de ${registrationsModal.capacity} cupos (${Math.max(0, registrationsModal.capacity - registrations.length)} disponibles)` : ' (Cupos ilimitados)'}
+                                    {registrationsModal.capacity && registrations.length >= registrationsModal.capacity && (
+                                        <span className="ml-2 bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">¡CUPOS COMPLETOS!</span>
+                                    )}
+                                </p>
+                            </div>
                             <button onClick={() => setRegistrationsModal(null)} className="text-[#8B5E3C] hover:text-[#4A3B32]">
                                 <X className="w-6 h-6" />
                             </button>
@@ -461,16 +494,25 @@ export default function AdminTalleresPage() {
 }
 
 // Componente Tarjeta Taller Administrador
-function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handleUpdateStatus, handleOpenRegistrations }: { t: Taller, handleDelete: (id: string, title: string) => void, handleEdit: (t: Taller) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void, handleOpenRegistrations: (id: string, title: string, bank_details: string) => void }) {
+function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handleUpdateStatus, handleOpenRegistrations }: { t: Taller, handleDelete: (id: string, title: string) => void, handleEdit: (t: Taller) => void, setGalleryModal: (id: string) => void, handleUpdateStatus: (id: string, status: string) => void, handleOpenRegistrations: (id: string, title: string, bank_details: string, capacity?: number | null) => void }) {
     
     // Extractor del JSON si se usó la nueva forma
     let summaryText = t.description;
     let bank_details = '';
+    let capacity: number | null = null;
     try {
         const parsed = JSON.parse(t.description);
         if (parsed.short) summaryText = parsed.short;
         if (parsed.bank_details) bank_details = parsed.bank_details;
+        if (parsed.capacity !== undefined && parsed.capacity !== null && parsed.capacity !== '') {
+            const cap = Number(parsed.capacity);
+            if (!isNaN(cap) && cap > 0) capacity = cap;
+        }
     } catch {}
+
+    const enrolled = t.registered_count ?? 0;
+    const isCapacityFull = capacity !== null && enrolled >= capacity;
+    const isLleno = t.status === 'lleno' || isCapacityFull;
 
     return (
         <div className="bg-white rounded-[2rem] shadow-sm border border-[#EACCA4]/30 flex flex-col items-start overflow-hidden hover:shadow-lg transition-all relative h-full">
@@ -488,7 +530,7 @@ function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handl
             <div className="p-6 flex flex-col items-start gap-4 w-full h-full">
                 <span className={`inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full gap-2 ${t.status === 'realizado' ? 'bg-[#EEEEEE] text-[#6B5A4E]' : 'bg-[#E8D1B5]/30 text-[#8B5E3C]'}`}>
                     {t.status === 'realizado' ? 'Realizado' : t.category}
-                    {t.status === 'lleno' && <span className="bg-red-100 text-red-700 px-2 rounded-full border border-red-200">LLENO</span>}
+                    {isLleno && <span className="bg-red-100 text-red-700 px-2 rounded-full border border-red-200">LLENO</span>}
                 </span>
                 <h3 className="text-xl font-bold text-[#4A3B32]">{t.title}</h3>
                 <p className="text-[#6B5A4E] text-sm leading-relaxed flex-1 line-clamp-3">{summaryText}</p>
@@ -496,6 +538,24 @@ function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handl
                 <div className="w-full bg-[#FAEDDF] px-4 py-3 rounded-xl flex items-center justify-between mt-auto">
                     <div className="text-sm font-semibold text-[#8B5E3C]">{t.date_info}</div>
                     <div className="text-lg font-bold text-[#4A3B32]">${Number(t.price).toLocaleString('es-CL')}</div>
+                </div>
+
+                {/* Barra informativa de Cupos en Admin */}
+                <div className="w-full bg-[#FDFCF8] border border-[#EACCA4]/40 rounded-xl p-3 flex items-center justify-between text-xs">
+                    <span className="text-[#6B5A4E] font-medium flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${isLleno ? 'bg-red-500' : 'bg-green-500'}`}></span>
+                        Inscritos: <strong className="text-[#4A3B32]">{enrolled}</strong> {capacity !== null ? `/ ${capacity} cupos` : '(Sin límite)'}
+                    </span>
+                    {isCapacityFull && (
+                        <span className="text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
+                            Agotado
+                        </span>
+                    )}
+                    {capacity !== null && !isCapacityFull && (
+                        <span className="text-[#8B5E3C] font-semibold">
+                            {capacity - enrolled} disponibles
+                        </span>
+                    )}
                 </div>
 
                 <div className="w-full flex gap-2 mt-2 flex-wrap text-center">
@@ -517,7 +577,7 @@ function WorkshopAdminCard({ t, handleDelete, handleEdit, setGalleryModal, handl
                     <button onClick={() => handleEdit(t)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
                          Editar
                     </button>
-                    <button onClick={() => handleOpenRegistrations(t.id, t.title, bank_details)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
+                    <button onClick={() => handleOpenRegistrations(t.id, t.title, bank_details, capacity)} className="flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200 transition-colors font-semibold text-[10px] uppercase tracking-wide">
                         Inscritos
                     </button>
                     {t.status === 'realizado' && (

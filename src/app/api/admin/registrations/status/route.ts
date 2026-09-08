@@ -79,6 +79,32 @@ export async function POST(request: Request) {
 
             if (deleteError) throw deleteError;
 
+            // Si el taller estaba marcado 'lleno' y ahora hay cupos libres, devolverlo a 'activo'
+            const workshopId = registration.workshop_id;
+            if (workshopId) {
+                const { data: ws } = await supabase
+                    .from("workshops")
+                    .select("*, workshop_registrations(count)")
+                    .eq("id", workshopId)
+                    .single();
+
+                if (ws && ws.status === 'lleno') {
+                    let capacity: number | null = null;
+                    try {
+                        const parsed = JSON.parse(ws.description);
+                        if (parsed.capacity !== undefined && parsed.capacity !== null && parsed.capacity !== '') {
+                            const cap = Number(parsed.capacity);
+                            if (!isNaN(cap) && cap > 0) capacity = cap;
+                        }
+                    } catch {}
+
+                    const remaining = ws.workshop_registrations?.[0]?.count ?? 0;
+                    if (capacity !== null && remaining < capacity) {
+                        await supabase.from("workshops").update({ status: 'activo' }).eq("id", workshopId);
+                    }
+                }
+            }
+
             // Enviar Correo de Cancelación
             if (resend) {
                 await resend.emails.send({
