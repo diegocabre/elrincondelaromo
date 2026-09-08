@@ -281,7 +281,7 @@ export default function AdminTalleresPage() {
                         setIsFormOpen(!isFormOpen);
                         if(isFormOpen) {
                              setEditId(null);
-                             setFormData({ title: '', category: '', description: '', full_description: '', price: '', date_info: '', status: 'activo', payment_mode: 'mercadopago', bank_details: '' });
+                             setFormData({ title: '', category: '', description: '', full_description: '', price: '', capacity: '', date_info: '', status: 'activo', payment_mode: 'mercadopago', bank_details: '' });
                         }
                     }}
                     className="bg-[#8B5E3C] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#6D492E] transition-colors shadow-md flex items-center gap-2"
