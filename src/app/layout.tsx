@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Dancing_Script, Montserrat } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 import Footer from "@/components/footer/Footer";
 import { NavBar } from "@/components/nav/NavBar";
@@ -87,6 +88,7 @@ export default function RootLayout({
         <Footer />
         <CookieBanner />
         <SpeedInsights />
+        <Analytics />
         <MicrosoftClarity />
       </body>
     </html>
