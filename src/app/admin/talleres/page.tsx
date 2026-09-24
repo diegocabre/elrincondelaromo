@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { compressImage, UPLOAD_OPTIONS } from '@/lib/compressImage';
 import { Plus, Trash2, Edit3, Image as ImageIcon } from 'lucide-react';
 
 interface Taller {
@@ -111,11 +112,12 @@ export default function AdminTalleresPage() {
 
         // Subir imagen si existe
         if (imageFile) {
-            const fileExt = imageFile.name.split('.').pop();
+            const compressed = await compressImage(imageFile);
+            const fileExt = compressed.name.split('.').pop();
             const fileName = `${Date.now()}.${fileExt}`;
             const { error: uploadError } = await supabase.storage
                 .from('images')
-                .upload(`talleres/${fileName}`, imageFile);
+                .upload(`talleres/${fileName}`, compressed, UPLOAD_OPTIONS);
                 
             if (uploadError) {
                 alert('Error subiendo imagen: ' + uploadError.message);
@@ -619,11 +621,11 @@ function GalleryManagerModal({ workshop, onClose }: { workshop: Taller | undefin
         
         setUploading(true);
         for (let i = 0; i < files.length; i++) {
-            const file = files[i];
+            const file = await compressImage(files[i]);
             const fileExt = file.name.split('.').pop();
             const fileName = `gallery_${Date.now()}_${i}.${fileExt}`;
             
-            const { error: uploadError } = await supabase.storage.from('images').upload(`talleres/${fileName}`, file);
+            const { error: uploadError } = await supabase.storage.from('images').upload(`talleres/${fileName}`, file, UPLOAD_OPTIONS);
             if (!uploadError) {
                 const { data: publicUrlData } = supabase.storage.from('images').getPublicUrl(`talleres/${fileName}`);
                 await supabase.from('workshop_gallery').insert([{

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { compressImage, UPLOAD_OPTIONS } from "@/lib/compressImage";
 import { Plus, Trash2, Edit3, Image as ImageIcon, X, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 
@@ -73,12 +74,13 @@ export default function AdminStorePage() {
     let imageUrl = null;
 
     if (brandImageFile) {
-      const fileExt = brandImageFile.name.split(".").pop();
+      const compressed = await compressImage(brandImageFile, 600);
+      const fileExt = compressed.name.split(".").pop();
       const fileName = `brand_${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("images")
-        .upload(`talleres/${fileName}`, brandImageFile);
+        .upload(`talleres/${fileName}`, compressed, UPLOAD_OPTIONS);
 
       if (uploadError) {
         alert("Error al subir la imagen: " + uploadError.message);
@@ -171,13 +173,13 @@ export default function AdminStorePage() {
 
     setUploadingGallery(true);
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      const file = await compressImage(files[i]);
       const fileExt = file.name.split(".").pop();
       const fileName = `store_gallery_${Date.now()}_${i}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("images")
-        .upload(`talleres/${fileName}`, file);
+        .upload(`talleres/${fileName}`, file, UPLOAD_OPTIONS);
 
       if (!uploadError) {
         const { data: publicUrlData } = supabase.storage

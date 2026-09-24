@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { Image as ImageIcon, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import LegalFormConsent from '@/components/legal/LegalFormConsent';
@@ -254,14 +255,21 @@ export default function TalleresClientManager({ talleresData }: { talleresData: 
                             <ChevronLeft size={36} />
                         </button>
                         
-                        <motion.img 
+                        <motion.div 
                             key={currentPhotoIdx}
-                            src={galleryPhotos[currentPhotoIdx].image_url}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.3 }}
-                            className="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-lg"
-                        />
+                            className="relative w-full h-[85vh] max-h-full"
+                        >
+                            <Image
+                                src={galleryPhotos[currentPhotoIdx].image_url}
+                                alt={`Foto ${currentPhotoIdx + 1} de la galería`}
+                                fill
+                                sizes="(max-width: 1024px) 100vw, 1024px"
+                                className="object-contain drop-shadow-2xl"
+                            />
+                        </motion.div>
 
                         <button onClick={nextPhoto} className="absolute right-2 lg:-right-20 text-white/50 hover:text-white transition-colors z-10 bg-black/50 p-3 rounded-full">
                             <ChevronRight size={36} />
@@ -378,7 +386,7 @@ function WorkshopDetailModal({ taller, onClose, handleAction }: { taller: Taller
             >
                 {taller.image_url && (
                     <div className="w-full aspect-[21/9] relative bg-[#2c231d]">
-                        <img src={taller.image_url} alt={taller.title} className="w-full h-full object-cover opacity-90" />
+                        <Image src={taller.image_url} alt={taller.title} fill sizes="(max-width: 672px) 100vw, 672px" className="object-cover opacity-90" />
                         <button onClick={onClose} className="absolute top-4 right-4 bg-black/40 text-white p-2 rounded-full hover:bg-black/80 transition-colors backdrop-blur-md">
                             <X size={24} />
                         </button>
@@ -502,7 +510,7 @@ function WorkshopPublicCard({ taller, handleAction, actionText, isRealizado, isL
             {/* Area de Imagen Absoluta */}
             {taller.image_url ? (
                 <div className="absolute inset-0 z-0 bg-[#2c231d]">
-                    <img src={taller.image_url} alt={taller.title} className={`w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105 ${isRealizado ? 'grayscale opacity-70' : 'opacity-90'}`} />
+                    <Image src={taller.image_url} alt={taller.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 400px" className={`object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105 ${isRealizado ? 'grayscale opacity-70' : 'opacity-90'}`} />
                 </div>
             ) : (
                 <div className="absolute inset-0 z-0 bg-[#FAEDDF] flex items-center justify-center">

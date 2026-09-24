@@ -127,8 +127,8 @@ export default async function ConceptStorePage() {
                   src={photo.image_url}
                   alt="Concept Store Osorno"
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  unoptimized
                 />
               </div>
             ))}
@@ -165,8 +165,8 @@ export default async function ConceptStorePage() {
                         src={brand.image_url}
                         alt={`Marca ${brand.name}`}
                         fill
+                        sizes="128px"
                         className="object-cover"
-                        unoptimized
                       />
                     </div>
                     
